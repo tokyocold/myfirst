@@ -1,0 +1,365 @@
+go语言笔记
+
+1、简介
+所有的go文件必须以package something作为开头。
+
+在go中，声明变量和赋值是两个过程
+var a int
+a=1
+
+s:="abc"
+
+var(
+	a int
+	b bool
+)
+
+字符串：单引号“‘”表示一个字符，不能包裹字符串
+Go中，字符串是不可以改变的
+s:="123" or
+s:=`123
+23`
+
+switch.. case
+case的条件匹配成功后 默认是不往下执行的，除非使用fallthrough关键字
+
+
+
+array
+定义  var arr [10]int
+多维数组定义
+arr := [3][2]int{{1,2},{3,4}}
+array 类型为值传递
+
+
+
+slice（切片）
+slice为引用传递
+
+关于slice中长度、容量和底层原理：
+slice保存原数组的值、指针。所以创建的slice，包括在此基础上进一步切片创建的slice，其都指向相同的一个数组。
+因此，这些slice的值发生了改变，相应的其他的slice和原始数组的值都会改变。
+最初的slice创建时，底层会创建一个数组，长度为slice的cap
+如果新的slice添加元素(append!)超出底层数据的len时，则会分配一个更大的数组。 返回的 slice 会指向这个新分配的数组。
+
+此时，这个slice就与原先的slice没有任何关系了。
+在大批量添加数据时，建议一次性分配足够大的空间，以减少内存分配和数据复制开销
+
+slice类型的值可以是结构体等特殊类型
+a := []struct{
+	x int
+	y int
+}{{1,2},{3,4}}
+
+range 可以对slice迭代
+每次迭代返回两个值，第一个是下标key,第二个是值
+可以用_,v = range arr 来只取一个值
+
+[][]T，是指元素类型为 []T
+
+
+
+函数
+func add(x int, y int) int Z
+返回值也必须定义
+没有参数的 return 语句返回各个返回变量的当前值
+支持不定长的变参，变参本质上就是 slice。只能有⼀一个，且必须是最后⼀一个。
+
+
+
+
+条件语句
+if、for都不需要用（）括住条件，但是｛｝是必须的
+
+作用域：
+if条件内可以定义变量，作用域仅限于if范围内  （else内也可以使用）
+函数外定义的变量作用域是全局。函数内可以直接调用使用
+函数内定义的变量作用域仅限于函数内
+
+defer 语句会延迟函数的执行直到上层函数返回。
+按照后进先出的顺序调用被延迟的函数调用
+关键字 defer 用于注册延迟调用。这些调用直到 ret 前才被执⾏行，通常用于释放资源或错误处理
+
+
+
+标签：
+可以为一段程序定义标签，使用continue/goto/break可以跳转到标签或者跳出程序
+
+
+指针
+指针保存了变量的内存地址  
+&符号会生成一个指向其作用对象的指针
+*符号表示该指针的值
+a:=1
+&a    //内存地址
+*&a   //1
+指针不能运算
+
+
+struct 结构体 值类型，赋值和传参会复制全部内容
+使用点号来访问	使用点号来访问
+成员支持指针	 
+typa a struct{	typa a struct{
+	x int		x int
+	y int		y int
+	node *int	 
+	node1 *self_struct	 
+}	}
+a{1, 2}.x  //1   error 没有包含全部字段	a{1, 2}.x  //1
+顺序初始化必须包含全部字段，否则会出错	 
+空结构可以实现没有 "状态" 只有⽅方法的 "静态类"，类似	 
+type null struct{}	 
+func(n null) name(){}
+
+数组
+[n]T 是一个有 n 个类型为 T 的值的数组
+slice
+[]T 是一个元素类型为 T 的 slice
+多维度定义
+[][]string{
+	[]string{"1","3","3"},
+	[]string{"1","3","3"},
+}
+
+表达式
+s[lo:hi]
+表示从 lo 到 hi-1 的 slice 元素，含前端，不包含后端。因此
+s[lo:lo]
+是空的，而
+s[lo:lo+1]
+有一个元素
+
+
+
+关于变量声明的一点想法：
+目前可知，变量声明赋值有两种方式
+1、分步
+	var [name] [type]
+	[name] = [type]  or  [name] = make([type])
+2、一次完成
+	[name] := [type] or [name] := make([type])	
+
+声明后的变量，不可以被再次声明，
+其次，再没有类型转换下，变量的类型不能为非声明的类型！与php大不相同！	
+
+不要被make关键字误导，该方法是基于变量的类型产生一个值。并非声明。
+map在声明后，其值为nil，不能赋值。在赋值之前，必须使用make来创建，或者使用:=完成声明、赋值	
+
+	
+不可以对map中取出的值的成员直接进行修改：	 
+a:=map[int]struct{	 
+	x int	 
+	y int	 
+}	 
+a[1].x=xxx  //error	 
+除非直接赋值 a[1]=xxx	 
+	 
+可以在迭代时安全删除键值   delete(map,key)
+
+range ：返回（索引，值）或者（键，值）
+⽀支持 string/array/slice/map/channel
+
+结构体的声明，
+type [name] struct {
+	
+}
+相当于使用class前的声明
+
+
+方法：
+方法总是绑定对象实例，可以看作是类方法。
+不能对来自其他包的类型或基础类型定义方法。
+换句话说，自定义的type可以定义方法，但内置的如int、string、float64等类型是不能定义方法的
+
+go中没有类，可以通过在结构体上定义方法来模拟类
+当方法接受者是结构体的指针时，方法操作的是结构体的指针，对其操作将会改变其初始值。
+当接受者是结构体（非指针），方法操作的是结构体值的副本。不会改变初始值
+type s struct{
+	X，Y float
+}
+//*s就是结构体的指针
+func (a *s) myfunc(){
+	a.X=***
+	a.Y=***
+}
+
+接口：
+接口的作用：golang中，接口是一些方法的集合。当任意的类型只要实现了接口中的所有方法，那么所有该接口可以使用的方法或者场合，实现接口的类型均可以使用。
+例如：
+type inter interface{
+	fname()
+}
+func fname2(i inter){
+	
+}
+只要有类型实现了fname方法，在使用inter的地方如fname2即可把类型传入
+空接口：
+空接口interface{} 没有任何方法签名，也就意味着任何类型都实现了空接口
+所以，func name(i interface{}) 这个方法可以接受任何类型的参数，例如fmt中的Printf之类的方法
+Type switch与Type assertions(类型推断):
+x.(T)
+其中，x必须为接口类型（即interface{}）
+
+技巧：
+通过编译器来确定某个类型是否实现了某个接口。
+var _ myInter = (*myType)(nil)
+本质就是声明一个myInter类型的变量并尝试使用某一类型进行赋值。
+*myType实现了所有mytype所实现的接口，但myType只实现了myType的方法，所以此处使用*myType即可
+
+
+
+
+
+
+Stringers fmt 包
+type Stringer interface {
+    String() string
+}
+fmt的输出方法里面，返回的实质上就是Stringer的string()方法返回值。因此可以在自定义type上绑定string()来实现
+
+	
+查看端口对应进程   netstat -nao
+
+
+goroutine  
+
+使用runtime.GOMAXPROCS实现多核并行
+测试结果：
+并发执行的效率与runtime.GOMAXPROCS中的设置数据有关。
+当runtime.GOMAXPROCS设置为1时，表示使用1颗CPU进行数据处理，结果和不使用goroutine所花费的时间相差无几。
+当runtime.GOMAXPROCS设置大于等于本机cpu核心数时，效率最高
+
+
+runtime.Goexit()可以结束当前goroutine，不会影响其他的goroutine，所有goexit之前defer注册的调用都会被执行
+
+
+sync.WaitGroup
+用于等待一组线程的结束。使用add(N)表示等待N组线程结束，同时每个线程结束时应该使用Done()表示线程结束。
+同时，主线程里可以调用Wait方法阻塞至所有线程结束。（Wait方法阻塞直到WaitGroup计数器减为0。）
+
+
+补充：线程数，runtime.GOMAXPROCS实际上是设置进程创建了多少个线程。
+linux查看线程： ps aux -L PID  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+goroutine 在相同的地址空间中运行，因此访问共享内存必须进行同步
+time.Sleep(100 * time.Millisecond)
+
+channel 
+channel的操作只有4种方式：
+创建channel(make函数实现，分为有缓存和无缓存两种)
+向channel中添加数据（channel<-data)
+从channel中读取数据（data<-channel）;
+关闭channel(通过close()函数实现，关闭之后无法再向channel中存数据，但是可以继续从channel中读取数据）
+
+其中无缓冲channel在读和写是都会阻塞，而有缓冲channel在向channel中存入数据没有达到channel缓存总数时，可以一直向里面存，直到缓存已满才阻塞
+
+关于无缓存channel的总结：
+读写都会阻塞，例如：
+ch :=make(chan int)
+ch<-1
+go func(){fmt.println(<-ch)}()
+上面的代码会造成死锁，原因是，ch<-1这一步会造成主协程阻塞，因而下面的go协程无法执行。
+因此，在无缓存channel中，存取数据不能放入同一个协程。防止死锁出现。同时，应该先使用go协程对channel进行操作造成阻塞，同时在主携程中解锁channel。总之，必须go协程在前，主协程在后
+
+
+有缓存的channel:
+是否阻塞通过判断缓冲区：如果缓冲区已满，发送被阻塞，如果缓冲区为空，接收被阻塞
+如果有指定close(channel)，则可以用v:=range channel  或者  v,ok=<-channel的方式来取出channel的值，否则会造成死锁。（因为channel未关闭，因此会继续执行<-channel）
+for v:=range chan{
+	
+}
+
+runtime.NumGoroutine可以查看当前有多少go协程
+
+使用select和time.After可以实现超时处理。
+
+循环 `for i := range c` 会不断从 channel 接收值，直到它被关闭
+
+
+
+
+
+
+标准库：
+time库
+主要类型
+
+1、Time类型 相当于时间对象，有一系列时间操作函数。
+T.Unix() //返回Time对象的unix时间戳
+T.sub(t) //T-t的时间差，duration类型
+T.Format(layout) //格式化一个时间  layout为“2006-01-02 15:04:05”类似
+T.add(duration类型) //返回T+d后的TIME对象，d可为负值
+Now()  //返回当前时间 Time对象
+Parse(layout,value string)  //根据layout模板解析一个时间，返回TIME对象
+
+
+2、Duration类型  一段时间，周期，基本但是为纳秒。可以使用 time.Second *10  来表示10s
+Since(t) // 返回从t时间开始到现在经过的时间，返回duration类型
+int64(time.Since(t).Seconds())  返回t到现在的秒数
+
+
+3、Timer类型  单次时间事件，Timer到期，发送当前时间到C
+NewTimer()
+eg:
+d := time.NewTimer(time.Second*1)
+<-d.C
+doSomeThing()
+可以做到延迟处理
+
+4、函数
+Sleep(duration类型)  延迟处理
+After(duration类型)
+
+
+
+os库
+操作系统函数
+
+1、函数
+Exit(code)  当前程序以给出的code退出，defer不会执行
+Mkdir(string,code)  创建文件夹
+MkdirAll(string,code)  可以创建"1/2/3/4"这样层级的目录
+Truncate(string,size) 修改文件大小，对不存在的文件可以创建
+
+
+2、File类型
+Create(name)   创建name文件，返回*File类型
+Open(name)	  打开name文件or目录，返回*File类型
+F.Readdir(n int)  返回目录下n个[]FileInfo类型，当n=0时，返回目录下所有内容
+F.Readdirnames(n int)  返回目录下n个[]string 文件名。操作会被F.Readdir影响
+
+
+
+
+
+
+
+私有变量
+在一个包中，一个名字是大写字母开头的，则这个名字是导出的（可被外部访问操作的，可以是结构体、方法、结构体内的字段等），如果这个名字是小写的，则为私有变量，只能在包内部访问
+
+unsafe.Pointer
+任意类型的 指针 ，均可转化为unsafe.Pointer类型(只能是指针）
+
+正常情况下，外部是不能够更改私有变量的值。但是，unsafe.Pointer类型有一下特性：
+1) 任意类型的指针可以转换为一个Pointer类型值
+2) 一个Pointer类型值可以转换为任意类型的指针
+3) 一个uintptr类型值可以转换为一个Pointer类型值
+4) 一个Pointer类型值可以转换为一个uintptr类型值
+
+因此，我们可以通过unsafe.Pointer类型来绕过限制，更改私有变量。

@@ -1,0 +1,30 @@
+困则思变
+现在的状态真是让我恶心而又无力。
+浑浑噩噩的当着撞钟的和尚，忘记了什么叫努力，也放弃了变得更好。
+连努力的勇气都没有，却开始了反问为什么？
+为什么？因为你现在还很弱小啊！
+
+是时候了，是时候重新站起来了！
+
+目标：Ping++,23K+
+list:
+linux(ubuntu)，熟练的包管理，IDE（php/go），init.d，cpu/内存/硬盘/IO/监控，shell脚本。
+Git
+php，支付对接，框架（？）
+nginx服务器配置  顺便压测
+mysql 锁（随便了解）
+GoLang   包形式
+VPN
+
+加油！
+
+
+
+
+linux:
+ubuntu安装成功（vmware）：
+开启3d加速后瞬间不卡。
+联网方式 host-only
+主机、虚拟机不能共享剪切板问题：重新安装vmware tools
+输入法：sogou
+Linux下的输入法是基于一个底层框架，有ibus/fcitx

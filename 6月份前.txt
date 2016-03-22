@@ -28,3 +28,47 @@ ubuntu安装成功（vmware）：
 主机、虚拟机不能共享剪切板问题：重新安装vmware tools
 输入法：sogou
 Linux下的输入法是基于一个底层框架，有ibus/fcitx
+
+全民wifi上网问题：
+在安装了官方驱动后，成功上网一段时间，出现系统崩溃。
+ubuntu klyin的kernal是3.X kernel没有集成mt7601驱动，
+因此，尝试选择其他方案：
+ppa:thopiekar/mt7601
+
+包管理：
+	apt-get 
+	1.定位包 
+	dpkg -l | grep reminders   dpkg -l 列出所有安装的包
+	or
+
+	dpkg -S file–>这个文档属于哪个已安装软件包 
+	dpkg -L package–>列出软件包中的任何文档
+
+	dpkg -r package 删除包（保留配置）
+	dpkg -P package 删除 （不保留配置）
+
+	ppa源：实质上就是https://launchpad.net/ubuntu/+ppas 这个网站上一个对应的ID，用来下载该用户提交的应用
+	sudo add-apt-repository ppa:user/ppa-name  添加ppa源
+	sudo apt-get update  更新源
+	此时就可以在系统中查看、安装对应的软件
+	apt-cache search mt7601
+	apt-get install mt7601-sta-dkms
+
+
+模块相关：
+	lsmod  列出 已经加载 的模块
+	cat /lib/modules/'uname -r' /modules.dep 可以查看所有的系统模块 包括未加载的。
+	modprobe XXX 加载模块
+	modprobe -r XXX 删除模块
+
+
+
+使用PPA源 安装完成后，已经可以在modules.dep中看到该模块：
+root@ubuntu:/lib/firmware# cat /lib/modules/4.2.0-16-generic/modules.dep| grep mt7601
+kernel/drivers/net/wireless/mediatek/mt7601u/mt7601u.ko: kernel/net/mac80211/mac80211.ko kernel/net/wireless/cfg80211.ko
+updates/dkms/mt7601Usta.ko:
+
+可以看到有两个ko，一个是kernel自带的 mt7601u ，一个是新安装的 mt7601Usta。
+加载： 
+modprobe mt7601Usta  
+lsmod已经可以看到  mt7601Usta  了。

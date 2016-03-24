@@ -87,3 +87,13 @@ swichysharp采用自动切换。有现成的配置文件。可以直接导入。
 
 
 ubuntu下首次提交
+vi:
+问题：
+   ubuntu中vi在编辑状态下方向键不能用，还有回格键不能删除等我们平时习惯的一些键都不能使用。
+
+解决办法：
+   可以安装vim full版本，在full版本下键盘正常，安装好后同样使用vi命令。
+安装vim：
+ ubuntu预装的是vim tiny版本，而需要的是vim full版本。执行下面的语句安装vim full版本：
+   $sudo apt-get remove vim-common
+   $sudo apt-get install vim

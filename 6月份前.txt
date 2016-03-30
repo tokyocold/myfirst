@@ -32,7 +32,15 @@ ubuntu安装成功（vmware）：
 	遇到的坑。。。。。。
 	首先，双显卡问题。双显卡在进入启动项目后会出现卡死/黑屏等一些情况，可以在引导菜单出现后。按E 进入文件编辑。添加nomodeset项目。避免出现驱动冲突。
 	U盘问题。通过BIOS引导。出现a required file is missing or contains errors.... 通过UEFI引导usb device read error/unable to find a medium containing a live file system。只能确定是硬件问题，始终无法定位到问题的所在。最后，，，换U盘搞定。。。（usb3.0->usb2.0)
-	
+
+linux下安装xp虚拟机：
+     使用virtualBox安装雨林木风ghostXP失败，更换为vmware player。
+     使用PQ分区，主分区（C）逻辑分区（D），注意，主分区要设置为作用的。否则安装后开机将会引导失败！
+网络配置（linux）下
+
+
+
+
 
 
 开启3d加速后瞬间不卡。

@@ -8,13 +8,13 @@
 
 目标：Ping++,23K+
 list:
-linux(ubuntu)，熟练的包管理，IDE（php/go），init.d，cpu/内存/硬盘/IO/监控，shell脚本。
+linux(ubuntu)，熟练的包管理，IDE（php/go），init.d，cpu/内存/硬盘/IO/监控/流量，shell脚本。
 Git
-php，支付对接，框架（？）
-nginx服务器配置  顺便压测
-mysql 锁（随便了解）
+php，支付对接，框架（？） composer
+nginx服务器配置  顺便压测   负载均衡
+mysql 锁（随便了解）  数据库主从
 GoLang   包形式
-VPN
+VPN      ok
 
 加油！
 
@@ -24,7 +24,7 @@ VPN
 linux:
 ubuntu安装成功（vmware）：
 开启3d加速后瞬间不卡。
-联网方式 host-only
+联网方式 host-only  只要保证ubuntu内的IP设置和VMnet1在一个网段即可，ping通
 主机、虚拟机不能共享剪切板问题：重新安装vmware tools
 输入法：sogou
 Linux下的输入法是基于一个底层框架，有ibus/fcitx
@@ -81,4 +81,12 @@ shadowsocks 建立与VPS（my hosts)的连接。通过指定的本地接口转发请求。
 因此，在ss执行后，需要设置代理。
 直接使用IE代理，或者360内的代理，会将所有的请求都转发到ss上，因此，我们需要一个软件来自动切换。例如访问国内站点时，不走ss，访问google时，则采用ss。这样就可以最大程度保证访问的通畅。
 swichysharp采用自动切换。有现成的配置文件。可以直接导入。
+所谓的在线规则就是指定乱七八糟的一大堆网址，请求的时候转发到自己的ss上，没什么大不了的。
+
+
 （lantern 待研究）
+关于chromeGae  其实就是 集成了 chrome/switchyOmega/lantern 的合计。
+lantern启动后，会将请求转发到8787端口上。
+switchyOmege则是负责配置需要转发的请求。
+
+

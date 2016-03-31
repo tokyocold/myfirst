@@ -23,6 +23,26 @@ VPN      ok
 
 linux:
 ubuntu安装成功（vmware）：
+    ubuntu/win10双系统安装：
+	充满血泪的两天。
+	现在开机启动方式有两种：BIOS（旧式启动）/UEFI（新式启动）  两者在我的电脑上可以兼容同时存在。 Bios是结合　ｍbr文件引导，UEFI是结合efi文件引导。
+	目前，win10默认安装后选择UEFI方式启动。Ubuntu也支持uefi方式启动。
+	可以直接将ISo文件解压到U盘中，在UEFI中设置从U盘启动，程序会自动找到UEFI文件夹下完成引导。
+	其次，微软有一个secure boot项目，用于保护自身的操作系统，可以在UEFI中关闭。
+	遇到的坑。。。。。。
+	首先，双显卡问题。双显卡在进入启动项目后会出现卡死/黑屏等一些情况，可以在引导菜单出现后。按E 进入文件编辑。添加nomodeset项目。避免出现驱动冲突。
+	U盘问题。通过BIOS引导。出现a required file is missing or contains errors.... 通过UEFI引导usb device read error/unable to find a medium containing a live file system。只能确定是硬件问题，始终无法定位到问题的所在。最后，，，换U盘搞定。。。（usb3.0->usb2.0)
+
+linux下安装xp虚拟机：
+     使用virtualBox安装雨林木风ghostXP失败，更换为vmware player。
+     使用PQ分区，主分区（C）逻辑分区（D），注意，主分区要设置为作用的。否则安装后开机将会引导失败！
+网络配置（linux）下
+
+
+
+
+
+
 开启3d加速后瞬间不卡。
 联网方式 host-only  只要保证ubuntu内的IP设置和VMnet1在一个网段即可，ping通
 主机、虚拟机不能共享剪切板问题：重新安装vmware tools
@@ -89,4 +109,21 @@ swichysharp采用自动切换。有现成的配置文件。可以直接导入。
 lantern启动后，会将请求转发到8787端口上。
 switchyOmege则是负责配置需要转发的请求。
 
+
+
+
+
+
+
+ubuntu下首次提交
+vi:
+问题：
+   ubuntu中vi在编辑状态下方向键不能用，还有回格键不能删除等我们平时习惯的一些键都不能使用。
+
+解决办法：
+   可以安装vim full版本，在full版本下键盘正常，安装好后同样使用vi命令。
+安装vim：
+ ubuntu预装的是vim tiny版本，而需要的是vim full版本。执行下面的语句安装vim full版本：
+   $sudo apt-get remove vim-common
+   $sudo apt-get install vim
 

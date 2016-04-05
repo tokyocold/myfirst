@@ -423,7 +423,7 @@ write|exec
 等。
 例如状态值 7 （二进制 111 ）表示  文件拥有read/write/exec权限。
 如何判断是否拥有某个权限：
-if  statu & read  ==1
+if  statu & read  !=0
 删除权限
 statu &= ^read
 思路：状态值取反后，除了标记位为0，其余都为1，在此条件上做&操作，则可以顺利删掉状态。

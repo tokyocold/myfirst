@@ -136,4 +136,23 @@ cmd提示Permission denied (publickey)。
 使用ssh-agent可以避免每次push的时候都要重复输入帐号密码。
 
 git 默认只会找~/.ssh/id_rsa的key，因此要支持多账户，则需要使用.ssh/config
-    
+
+1、配置github ssh，避免push时反复提交密码
+	ssh-keygen -t rsa -b 4096 -C "your_email@example.com"
+	ssh-add ~/.ssh/id_rsa
+	Add the SSH key to your GitHub account.（公钥添加）
+	测试是否正确：
+	ssh -T git@github.com
+	如果提示：
+	Hi username! You've successfully authenticated, but GitHub does not
+provide shell access.则表示正确配置。
+
+坑：理论上提示出现以后，push时已经可以自动push而不需要反复输密码，出现了这种原因后，经过排查：
+SSH forwarding only works with SSH URLs, not HTTP(s) URLs. Check the .git/config file on your server and ensure the URL is an SSH-style URL like below:
+
+[remote "origin"]
+  url = git@github.com:yourAccount/yourProject.git
+  fetch = +refs/heads/*:refs/remotes/origin/*
+  修改后即可正常运行。
+
+2、多账户

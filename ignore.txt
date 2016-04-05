@@ -125,3 +125,15 @@ vi:
    $sudo apt-get remove vim-common
    $sudo apt-get install vim
 
+
+
+
+git:
+windows下，bash可以正常使用git push/pull命令。
+cmd提示Permission denied (publickey)。
+原因是没有设置%HOME%环境变量，添加%HOME%为包含.ssh的文件夹路径（一般是C:/users/XX）
+
+使用ssh-agent可以避免每次push的时候都要重复输入帐号密码。
+
+git 默认只会找~/.ssh/id_rsa的key，因此要支持多账户，则需要使用.ssh/config
+    

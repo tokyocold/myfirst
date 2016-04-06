@@ -139,6 +139,7 @@ git 默认只会找~/.ssh/id_rsa的key，因此要支持多账户，则需要使用.ssh/config
 
 1、配置github ssh，避免push时反复提交密码
 	ssh-keygen -t rsa -b 4096 -C "your_email@example.com"
+	eval "$(ssh-agent -s)"
 	ssh-add ~/.ssh/id_rsa
 	Add the SSH key to your GitHub account.（公钥添加）
 	测试是否正确：
@@ -156,3 +157,18 @@ SSH forwarding only works with SSH URLs, not HTTP(s) URLs. Check the .git/config
   修改后即可正常运行。
 
 2、多账户
+在.ssh目录下
+	a 新增一个ssh key  ssh-keygen -t rsa -C "liucj@2345.com"，新增时，会提示id_rsa已经存在，输入一个新的文件名。则公钥私钥都会保存在新文件名中
+	
+	b 新建config文件。内容：
+	Host gitlab245
+	  HostName 172.16.0.245 
+	  User liucj@2345.com
+	  IdentityFile ~/.ssh/gitlab245
+
+	c add ssh key to ssh-agent
+	  eval "$(ssh-agent -s)"
+	  ssh-add ~/.ssh/gitlab245
+	
+	d test ssh connect 
+	ssh -T git@172.16.0.245 

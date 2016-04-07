@@ -345,7 +345,9 @@ F.Readdir(n int)  返回目录下n个[]FileInfo类型，当n=0时，返回目录
 F.Readdirnames(n int)  返回目录下n个[]string 文件名。操作会被F.Readdir影响
 
 
-
+strconv库  
+ParseInt(s string, base int, bitSize int)   将任意进制表示的数字（字符串类型）转为int
+FormatInt(i int64, base int) string   将 int 型整数 i 转换为字符串形式（任意进制）
 
 
 

@@ -74,6 +74,9 @@ ppa:thopiekar/mt7601
 	apt-cache search mt7601
 	apt-get install mt7601-sta-dkms
 
+	apt-get build-dep 可以解决依赖。
+	最好不使用源码安装，一定要使用源码安装的话，务必制定--prefix参数。
+	
 
 模块相关：
 	lsmod  列出 已经加载 的模块
@@ -172,3 +175,121 @@ SSH forwarding only works with SSH URLs, not HTTP(s) URLs. Check the .git/config
 	
 	d test ssh connect 
 	ssh -T git@172.16.0.245 
+
+
+
+
+进程/线程
+一个CPU单次只能处理一个进程（一个程序）
+因此，在多核CPU上为了能够更大程度利用CPU，大部分程序都会对多线程做支持。
+
+关于多进程 （多进程单线程） 好还是多线程（单进程多线程）好 ，众说纷纭我也不知道。。。
+
+另：（关于php单线程）
+php本身不支持多线程，用来处理数据运算很蛋疼。但是，并不意味着php不能处理网络请求，因为
+网络请求的线程是由服务器！！来建立的。而php本身有自己的进程管理器（比如php-fpm），每个
+请求过来后都会创建一个Php进程与服务器通信，断开后销毁进程。
+创建一个进程的消耗要大于线程，但难度要小于线程（不涉及到内存共享之类）
+
+
+
+goroutine的 RWMutex（读写锁）
+当多个线程操作一个共享内存时（例如写数据）可能会出现异常情况。
+因此为了保证数据正确性，多个goroutine时要注意锁的使用。
+
+读写锁是针对读写的互斥锁
+基本遵循两大原则：
+1、可以随便读，多个goroutine同时读
+2、写的时候，啥也不能干。不能读也不能写
+
+
+
+
+linux 命令
+
+分割字符串：
+cut awk
+mysql5.6 - XXXXXXXX
+cut :
+	cut -d' ' -f1    //-d后面为分隔符   空格为‘  ‘
+awk:
+	awk '{print $1}' // -F后面为分隔符   默认为空格    命令需要放在'{}'内
+
+
+xargs  
+ls|xargs wc -l    将前面标准化输出的结果逐行作为 命令参数执行
+
+ps 进程查看
+	参数
+	参数有几类：
+	1 /   进程选择参数   指定输出哪一些进程
+	a 终端机下的所有程序
+	x 非终端机下所有进程
+	-A /-e 所有进程
+	所以 ps -A 实质上等于 ps ax
+
+	2/ 指定进程参数     指定的命令名/PID/groupID
+	-p 111
+	-C watch/bash	
+
+	3/输出结果控制参数
+	-f 全格式
+	-j 作业模式
+	-l 长格式
+	u  用户模式
+	-o format    输出用户定义的格式例如 %cpu,%mem,pid,psr,args等等
+
+	4/输出结果修饰参数   在输出的结果基础上进行修饰
+	c 只输出命令名  不输出参数/路径等   （参数太长不看）
+	O order 排序
+
+
+	5/  线程相关参数
+	-L 输出线程 ，包括LWP（线程id)
+	 
+	输出控制选项 （可以作为-o 参数）
+	非常多，几个有意思的：
+	args   执行命令（包括参数/路径）
+	comm	 只有命令（不包括参数路径）
+	psr    进程（or线程）目前在哪个CPU上工作
+
+最后，监控go的goroutine具体情况命令：
+watch -n 1 'ps -eLo s,pid,ppid,lwp,%cpu,%mem,args,psr|grep goroutine'    可以看到当前的goroutine线程  具体分布在哪个CPU上面，cpu占用情况等一系列数据。
+
+
+
+课题：玩玩Php的多进程实现，与go做比较。结合docker，比较php5 php7
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

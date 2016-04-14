@@ -261,6 +261,11 @@ ps 进程查看
 watch -n 1 'ps -eLo s,pid,ppid,lwp,%cpu,%mem,args,psr|grep goroutine'    可以看到当前的goroutine线程  具体分布在哪个CPU上面，cpu占用情况等一系列数据。
 
 
+shell
+获取上一条命令执行的结果:$?    1表示失败 0表示成功
+
+
+
 
 课题：玩玩Php的多进程实现，与go做比较。结合docker，比较php5 php7
 

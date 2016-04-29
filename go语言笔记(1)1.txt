@@ -58,6 +58,19 @@ range 可以对slice迭代
 [][]T，是指元素类型为 []T
 
 
+slice内存泄露研究
+当slice使用append增加空间时，会重新分配一个更大的内存空间，这么做的结果就是，新分配的内存空间与原有的内存没有任何关系，但原来的内存空间并没有释放掉。
+
+如果一开始，slice的容量不够大，在后期通过append来扩大slice容量，会造成严重的内存泄露。容量为10的slice 20000000次append  与  容量为20000000的slice，append20000000次，效率天壤之别。
+
+
+
+
+
+
+
+
+
 
 函数
 func add(x int, y int) int Z
@@ -153,6 +166,16 @@ a:=map[int]struct{
 }	 
 a[1].x=xxx  //error	 
 除非直接赋值 a[1]=xxx	 
+原因： map中的元素没有保存地址，是不可寻址的。
+给出的理由是：如果保存地址的话，map一旦改变删除元素会重新分配内存空间，原有的内存地址就会不可用。
+可以在map中保存指针来达到操作元素struct的目的
+map[int]*struct{}
+
+map的遍历是随机无序的。
+
+
+
+
 	 
 可以在迭代时安全删除键值   delete(map,key)
 
@@ -368,6 +391,16 @@ unsafe.Pointer
 
 反射
 反射Values为了修改它们所表示的东西必须要有这些东西的地址
+如何获取struct内部的元素。
+通过反射可以实现。但问题是，非导出元素（私有成员）是不能通过interface()方法返回内容的。
+现在要返回data结构体的所有成员，保存在[]string中。
+v:=reflect.ValueOf(*data)
+values := make([]string, v.NumField())
+for i:=0;i<v.NumField();i++{
+	values[i]=fmt.Sprint(v.Field(i))  这才是最便捷的方式。
+	//values[i]=strconv.FormatInt(v.Field(i).Int(),10) 需要明确知道成员的类型，采用对应的方法
+	//values[i]=v.Field(i).Interface()  data中包含私有成员则无法使用该方法
+}
 
 
 
@@ -435,3 +468,21 @@ statu &= ^read
 重定向错误 2>%261  （2>&1)
 go程序执行时，产生的panic错误，可以作为标准化错误输出重定向出来：
 ./goPro 2>panic.log
+
+
+
+
+
+
+
+new 
+slice/数组  初始化  分配空间的问题。
+
+
+
+
+
+
+
+
+

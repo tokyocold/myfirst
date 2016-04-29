@@ -214,7 +214,16 @@ cut :
 	cut -d' ' -f1    //-d后面为分隔符   空格为‘  ‘
 awk:
 	awk '{print $1}' // -F后面为分隔符   默认为空格    命令需要放在'{}'内
-
+	awk 的命令中可以写程序/逻辑判断等    例如  '{if($1>0){print $1,$2}}'  去重 '{if (a[$1]!=1){print $1;a[$1]=1;}}'  //看上去像PHP语法
+	awk内置变量
+	ARGC    命令行参数的个数
+	ARGV    命令行参数数组
+	ARGIND 当前被处理文件的ARGV标志符
+		利用ARGIND可以逐个处理待处理的文件
+	NR 　　已经读出的记录数
+	FNR   　当前文件的记录数
+	数组：  	{if(!a[$1]){a[$1]=1;b[$6]+=1;}}END{for(i in b){print i,b[i];}}   长度 length(a);
+	多维数组，只支持组合的数组（a[$1,$2]=1） 实质上并非多维数组 ，只是键值组合起来  。a[$1 SUBSEP $2]=1 
 
 xargs  
 	参数：
@@ -224,6 +233,9 @@ xargs
 	-t 执行前先打印出命令
 	-I 使用特殊字符（默认{}）代替参数 
 	ls|xargs wc -l    将前面标准化输出的结果逐行作为 命令参数执行
+		
+
+
 
 
 ps 进程查看
@@ -263,11 +275,111 @@ ps 进程查看
 最后，监控go的goroutine具体情况命令：
 watch -n 1 'ps -eLo s,pid,ppid,lwp,%cpu,%mem,args,psr|grep goroutine'    可以看到当前的goroutine线程  具体分布在哪个CPU上面，cpu占用情况等一系列数据。
 
+查看进程命令绝对路径：
+在/proc/目录下有对应PID的文件夹，进去ll 一目了然
+
+
 
 shell
-获取上一条命令执行的结果:$?    1表示失败 0表示成功
+	获取上一条命令执行的结果:$?    1表示失败 0表示成功
 
 
+解压
+unzip
+	unzip -O cp936 -d E_bak E.zip
+	-O cp936 解决解压文件名乱码的问题
+
+
+curl
+	参数
+	-I 只响应头部信息
+	-H 自定义头信息传递给服务器
+	curl -H "Host:jifen.2345.com"  http://172.16.0.1/index.php
+
+
+内存相关：
+free -m 查看内存
+swapoff  顾名思义，关闭swap,会将swap里的数据全部都放入内存中。一般释放swap的操作为：
+swapoff -a;swapon -a;
+如果提示：
+swapoff: /dev/sdb6: swapoff failed: Cannot allocate memory
+很明显，内存空间不足，不够存下所有swap空间的内容。所以关点东西，清一下内存就OK啦/
+
+释放内存cache（貌似意义不大）：
+第一步    sync
+
+通过修改proc系统的drop_caches清理free的cache
+echo 3 > /proc/sys/vm/drop_caches
+
+
+
+
+fastcgi相关：
+apache 对PHP的解析有三种方式：
+mod_php	模块方式
+php_fpm  fastcgi方式 （apache 对应的模块：2.2  mod_fgid ）
+
+mod_php 
+传统方法，默认的方式。
+优点：配置简单
+缺点：开销大  最重要的  修改php.ini后需要重启apache!
+
+
+php-fpm
+php的fastcgi实现。
+优点：开销小于mod方式。最重要的，修改php.ini不需要重启apache!
+缺点：配置复杂？？
+
+
+(可以尝试一下 fastcgi 实现php支持）
+
+
+
+crontab
+crontab -l 列出当前用户的Crontab项目
+-u user	指定用户
+-e 编辑crontab
+-r 删除当前用户的crontab文件
+
+对crontab的编辑生成的文件为/var/spool/cron/crontabs/User
+crontab日志 ：可以在/var/log/syslog中查看
+
+
+munin 总结：
+蛋疼的玩意儿
+munin linux服务器上的一个监控软件。分为server端和node端两部分
+sudo apt-get install munin munin-common munin-node 
+
+流程：
+服务端定时发送请求向node端收集监控信息，然后将结果保存在一个文件夹中，供http服务器生成结果页面。
+因此需要apache等http服务器环境。
+
+在munin.conf配置中，可以指定
+html_strategy cron
+则munin会以cron的方式定时去node端获取数据。   除此之外还可以设置cgi(暂不了解这么做的意义---)
+
+生成的结果页面中，所有的监控项目最低的显示单位是by day。
+点进去发现图片没有显示，原因是munin需要cgi支持，动态生成图片结果。
+所以在http上面安装cgi扩展
+apt-get install libapache2-mod-fcgid
+在apache.conf中配置location，fastcgi相关设置。
+
+如果仍然不能显示图片，提示500错误。尝试安装CGI::Fast Perl module
+ apt-cache show libcgi-fast-perl
+
+
+
+
+
+
+
+
+
+
+
+
+20160429分享   
+	子查询  优化器  依赖式子查询
 
 
 课题：玩玩Php的多进程实现，与go做比较。结合docker，比较php5 php7

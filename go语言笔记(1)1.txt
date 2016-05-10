@@ -465,13 +465,51 @@ statu &= ^read
 
 
 
+Json生成
+使用json.Marshal()可以将给的值转为json
+注：非导出变量不会被转为json key。
+
+
 重定向错误 2>%261  （2>&1)
 go程序执行时，产生的panic错误，可以作为标准化错误输出重定向出来：
 ./goPro 2>panic.log
 
 
 
+Sort排序
+sort可以对slice和用户定义的slice数据集合进行排序
+要使用sort排序，必须实现sort的interface接口：
+Len() int 元素个数
+Less(i,j int) bool   i是否比j小
+Swap(i,j) 交换i,j
 
+实现了即可使用
+Sort()方法/Reserve()方法 排序
+
+
+i:=sort.Search(l int,func(i int) bool) int   使用 二分法 搜索 满足func的最小索引i ,所以这个数据结构必须是有序的
+
+SearchInts([]int ,x)
+SearchFloats([]float,x)
+SearchStrings([]string,x)
+在slice中查找x出现的位置。注意：slice必须是递增顺序的slice。可以事先用sort.Sort(sort.IntSlice([]int))来排一下顺序
+
+
+
+rune类型
+int32的数字，可以表明所有unicode字符类型
+len(string)时，返回的并不是字符串的长度，而是字符串 `字节`的长度。
+len([]rune(string))  这样才是我们要的字符串长度。
+range一个字符串时，val的类型就是rune
+
+
+敏感词过滤算法：
+敏感词库数据：7W条+
+原来的做法：循环每一个敏感词，在文章中查找敏感词是否出现。
+优化后：
+首先：
+1 将所有的敏感词的第一个字符存为map(firstChar),所有的字符也存为map（allChar),最后，以badword为key，存为一个map(badword)
+2 
 
 
 
@@ -481,7 +519,17 @@ slice/数组  初始化  分配空间的问题。
 
 
 
+//debug
+go tool pprof -inuse_space costJifenUser  http://localhost:6060/debug/pprof/heap
 
+_ "net/http/pprof"
+
+go func() {
+	log.Println(http.ListenAndServe("localhost:6060", nil))
+}()
+
+ch := make(chan int)
+<-ch
 
 
 

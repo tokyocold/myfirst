@@ -317,7 +317,7 @@ echo 3 > /proc/sys/vm/drop_caches
 fastcgi相关：
 apache 对PHP的解析有三种方式：
 mod_php	模块方式
-php_fpm  fastcgi方式 （apache 对应的模块：2.2  mod_fgid ）
+php_fpm  fastcgi方式 （apache 对应的模块：2.2  mod_fgid（错误） mod_fastcgi  2.4 mod_proxy_fgid ）
 
 mod_php 
 传统方法，默认的方式。
@@ -332,6 +332,17 @@ php的fastcgi实现。
 
 
 (可以尝试一下 fastcgi 实现php支持）
+
+php-cgi  和 php-fpm是php的cgi的两种实现方式。
+php-fpm效率要大大优于php-cgi
+
+apache的mod_fgid核mod_fastcgi的指令集完全不同，mod_fgid并不支持外部服务器，因此也不可能
+
+
+
+
+
+
 
 
 
@@ -369,11 +380,37 @@ apt-get install libapache2-mod-fcgid
 
 
 
+sed命令   输出一列连续的数字（一般用在shell中）
+-w	 固定长度输出   sed -w 1 10  output:01 02 ....10
+-f ”%3g"  指定宽度，不满前面补空格
 
 
 
 
+date命令
++"FORMAT"  格式化时间    date +"%Y%m%d"
+-d "string" 	解析一个时间字符串。  date -d "a week ago"
 
+时间戳与时间互相转换
+date -d "20160101" +"%s"
+
+date -d "1970-01-01 UTC 1451577600 secodes" +"%Y%m%d"
+
+
+
+
+nfs远程挂载
+ mount -t nfs 172.16.9.18:/home/lcj/code/pc.50bang.org /opt/case/liucj/
+
+
+ftp的传输方式有两种，ascii和二进制
+ascii方式传输，ftp会自动调整内容以便把文件存储成目标机器的文本格式
+二进制方式传输，则不会转换调整内容
+
+
+ldd file 
+查看某个可执行程序所需的共享库
+/etc/ld.so.conf 指定动态链接库的目录，修改后使用ldconfig重新生成。
 
 
 
@@ -384,7 +421,18 @@ apt-get install libapache2-mod-fcgid
 
 课题：玩玩Php的多进程实现，与go做比较。结合docker，比较php5 php7
 
+php fast cgi 模式
+apache 2.4 使用 fcgid_module
+php使用 php_cgi
+apachectl -M 当前apache已经加载的模块
+a2enmod php7.0  指定apache加载php7.0模块
+a2dismod php7.0 指定apache卸载php7.0模块
 
+目前结果是   模块方式加载php的效率要大大优于fast cgi模式
+
+
+
+研究 mpm prework  php-fmp
 
 
 

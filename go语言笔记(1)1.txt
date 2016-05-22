@@ -465,6 +465,13 @@ statu &= ^read
 
 
 
+int类型
+go下的int类型默认是8个字节，即int64。
+使用unsafe.Sizeof()可以获取变量占用的字节数。
+
+
+
+
 Json生成
 使用json.Marshal()可以将给的值转为json
 注：非导出变量不会被转为json key。
@@ -473,6 +480,9 @@ Json生成
 重定向错误 2>%261  （2>&1)
 go程序执行时，产生的panic错误，可以作为标准化错误输出重定向出来：
 ./goPro 2>panic.log
+
+
+
 
 
 
@@ -503,13 +513,22 @@ len([]rune(string))  这样才是我们要的字符串长度。
 range一个字符串时，val的类型就是rune
 
 
+file读写坑：
+ os.OpenFile(file, os.O_CREATE|os.O_WRONLY, 0777)
+这个模式打开文件写入内容，并不会清空文件重新写，而且仅仅覆盖写入数据长度的原始数据，比如：文件内容为abcdefg,如果写入：ddd，
+则文件内容为ddddefg,不会清空文件。
+只有加上 os.O_WRONLY|os.O_TRUNC|os.O_CREATE才能达到清空重写的效果
+
+
+
 敏感词过滤算法：
 敏感词库数据：7W条+
 原来的做法：循环每一个敏感词，在文章中查找敏感词是否出现。
 优化后：
 首先：
 1 将所有的敏感词的第一个字符存为map(firstChar),所有的字符也存为map（allChar),最后，以badword为key，存为一个map(badword)
-2 
+2 遍历文章，取逐个字符，首先在firstChar map中找是否存在，不存在继续往下一个字符，如果存在：
+	在allChar中找下一个字符是否存在，如果存在，查看目前的字符串是否在badword中存在。
 
 
 

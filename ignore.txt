@@ -233,7 +233,9 @@ xargs
 	-t 执行前先打印出命令
 	-I 使用特殊字符（默认{}）代替参数 
 	ls|xargs wc -l    将前面标准化输出的结果逐行作为 命令参数执行
-		
+       当执行的命令有多个参数时，可以使用bash -c :
+	echo a b c | xargs -l -n 1 bash -c 'echo $0 $1 $2'
+
 
 
 
@@ -362,6 +364,8 @@ munin linux服务器上的一个监控软件。分为server端和node端两部�
 sudo apt-get install munin munin-common munin-node 
 
 流程：
+munin-node启动后会监听一个端口（默认4949），用户munin服务端来获取数据
+
 服务端定时发送请求向node端收集监控信息，然后将结果保存在一个文件夹中，供http服务器生成结果页面。
 因此需要apache等http服务器环境。
 
@@ -415,29 +419,39 @@ ldd file
 
 
 
-20160429分享   
-	子查询  优化器  依赖式子查询
+service的开机启动设置
+乱七八糟的。。。
+传统的启动服务使用： /etc/init.d/XXX方式启动
+/etc/init/是init.d的替换演化版本
+service可以兼容两者。因此可以使用 service XXX start 来启动
+
+开机启动：
+
+可以使用  update-rc.d apache disable 方式（类似红帽下的chkconfig）
+if Upstart job definitions do not have an update-rc.d command. 
+可以编辑文件。
+mv /etc/init/smbd.conf /etc/init/smbd.conf.disabled
+实现开机不启动
 
 
-课题：玩玩Php的多进程实现，与go做比较。结合docker，比较php5 php7
-
-php fast cgi 模式
-apache 2.4 使用 fcgid_module
-php使用 php_cgi
-apachectl -M 当前apache已经加载的模块
-a2enmod php7.0  指定apache加载php7.0模块
-a2dismod php7.0 指定apache卸载php7.0模块
-
-目前结果是   模块方式加载php的效率要大大优于fast cgi模式
+grep命令
+-r  递归查询目录下的文件夹内容。
+-H 查询的结果带文件名，查询多个文件时为默认选项
+-v 查询不匹配的所有结果。
+grep -Hr "^[^;]" /etc/php  查询没有注释的php.ini内容
+也可以
+grep -Hrv "^[;]" /etc/php
 
 
+远程访问共享文件夹：
+linux下访问局域网内的windows共享文件，可以使用smb服务
+直接在资源管理器中输入  smb://172.16.20.249/
+输入用户名密码
+即可访问。
+linux远程挂载：
+ mount //172.16.20.249/E /opt/data/ -o username=×××,password=××× -t cifs
 
-研究 mpm prework  php-fmp
-
-
-
-
-
+umount -f /opt/case/liucj 强制卸载
 
 
 

@@ -552,4 +552,64 @@ ch := make(chan int)
 
 
 
+DARK TRICK
+关于黑魔法，核心是通过直接修改指针的类型达到struct/slice/string  这些数据与[]byte数据互相转化。而不需要通过内部机制复制转化。从而达到效率最佳。
+http://studygolang.com/articles/2909
+关于slice 和 string在golong中的底层：
+slice和string的本质是一个结构体，在reflect中有体现：
+type StringHeader struct {
+    Data uintptr
+    Len  int
+}
+
+type SliceHeader struct {
+    Data uintptr
+    Len  int
+    Cap  int
+}
+string和[]byte互转
+因为本身StringHead和SliceHead的结构是类似的（即内存对齐（需在研究一下）），因此可以通过直接修改指针类型而不需要直接去取Data字段。
+func byteString(b []byte) string {
+	return *(*string)(unsafe.Pointer(&b))
+}
+
+struct和[]byte互转
+首先，要引入一个定长(fixed-size)的概念。   int32 int64  这些固定字节的变量都是定长的。而string/map 则不是定长。反映在内部：
+定长的变量，内存直接保存的值。
+而变长则不然，一般分为顶层和底层。顶层保存底层的地址，底层则保存值。
+
+slice有点不同：
+例如：[]int32   这个slice也是分为顶层和顶层。顶层为其sliceHeader的指针，底层有三个key,Len/Cap 为长度/容量。 Data则为uintptr类型。因为[]int32成员的类型为int32定长类型，因而，Data里保存的指针也是直接保存值，（内存的长度应该是通过len/cap来确定），因此也可以看做是一个定长变量
+
+
+获取内存大小可以使用： unsafe.Sizeof()和binary.Size()，两者都可以获取定长类型的内存占用。不同之处是：
+unsafe.Sizeof中的参数为string/slice时，其返回的大小是顶层的大小。即string为16（stringHeader的大小）slice为24（sliceHeader的大小），因此，unsafe.Sizeof([]int32)并不会取到数据的大小
+binary.Size可以获取定长值、定长值的切片、定长值的指针的字节大小。当参数不是定长值时，则返回-1。
+
+这就表明，unsafe.Sizeof([]int32)取不到数据的内存大小，binary.Size可以取到。
+但当参数是定长的结构体（所有成员都是定长），则两个都可以取到正确的大小。
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

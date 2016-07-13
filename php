@@ -26,3 +26,24 @@ apache配置：
 
 php-fmp：
 
+
+nginx配置：
+层级：http->server->location
+
+
+服务器文件夹权限设置：
+先查看nginx/apache启动后的进程用户
+ps aux|grep apache
+
+可以将目录的组设置为进程的用户。目录的用户设置为执行用户（lcJ)
+
+
+
+
+
+
+
+
+
+
+目标 个人博客

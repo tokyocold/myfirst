@@ -538,6 +538,17 @@ slice/数组  初始化  分配空间的问题。
 
 
 
+Printf(format)
+Sprintf(format)
+format:
+%b  表示为二进制
+%d	 表示为十进制
+%o  表示为八进制
+%x  表示为十六进制
+%016x 表示为十六进制，宽度为16，不满16前面补0
+
+
+
 //debug
 go tool pprof -inuse_space costJifenUser  http://localhost:6060/debug/pprof/heap
 
@@ -549,6 +560,66 @@ go func() {
 
 ch := make(chan int)
 <-ch
+
+go install /go build 区别
+go install 会在pkg中生成库文件（.a) 	如果有main文件，则会在bin中生成可执行二进制文件
+go build 只对main文件生效，在当前文件所在的目录下生成一个二进制文件
+
+go instal /go get 都要依赖GOPATH，go get 会默认下载到第一个GOPATH中。go install XXX 则会在GOPATH/src下面寻找XXX库是否存在。
+
+
+
+http库
+创建一个服务器：
+首先要为具体的地址绑定路由：
+绑定路由可以使用：
+	http.Handle(path,Handler)
+	http.HandleFunc(path,func(){})
+区别：http.HandleFunc和http.Handle本质上一样，差别就是http.HandleFunc()参数只需要传入一个func (w http.ResponseWriter, r *http.Request)，handleFunc会在方法内部将该func转为handler对象，而Http.Handle()传入的必须是Handler对象，即需要自己实现Handler的接口。可以使用http.HandlerFunc类型，将自己的func转为HandlerFunc类型，该类型已经实现了Handler接口。
+因此可以发现，使用http.HandleFunc是比较方便的。
+
+绑定好路由之后，才可以开始监听端口
+http.ListenAndServe
+
+
+http.StripPrefix
+将前缀去掉。为什么要使用这个方法？
+例如，在localhost/tmp/下绑定一个/tmp的fileserver。  我们的目的是访问/tmp/是列出服务器上/tmp下面的内容，如果没有使用StripPrefix去掉/tmp/前缀的话，显示的路径将会成为：
+/tmp/tmp/ 而不是我们所需要的。
+因此：
+http.Handle("/tmp/",http.FileServer(http.Dir("/tmp")))  wrong
+http.Handle("/tmp/",http.StripPrefix("/tmp/",http.FileServer(http.Dir("/tmp"))))  right
+
+
+
+
+
+bufio库
+解决内存过大的问题：
+原来读取文件的方式是ioutil.ReadAll(handle)，然后将结果split(str,"\n"）这样的方式。
+结果在读取大文件的时候内存占用相当严重。80M的文件，经过一些处理，内存居然要占用到200M以上，仔细想想，其实就是ioutil.ReadAll会一次性将所有的文件读入内存，因此内存占用过大很正常。
+使用bufio.NewReader(handle)
+bufio.ReadLine() 或者 bufio.ReadString('\n') 则可以一行一行的读取，结果会大量节省内存。
+注：使用ioutil.ReadAll()后，手动使用runtime.GC()，也是会释放掉读取进来文件的内存的。但是这么做显然没有bufio库方案合理。
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

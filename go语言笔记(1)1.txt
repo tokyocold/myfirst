@@ -638,13 +638,13 @@ type SliceHeader struct {
     Len  int
     Cap  int
 }
-string和[]byte互转
+##string和[]byte互转##
 因为本身StringHead和SliceHead的结构是类似的（即内存对齐（需在研究一下）），因此可以通过直接修改指针类型而不需要直接去取Data字段。
 func byteString(b []byte) string {
 	return *(*string)(unsafe.Pointer(&b))
 }
 
-struct和[]byte互转
+##struct和[]byte互转##
 首先，要引入一个定长(fixed-size)的概念。   int32 int64  这些固定字节的变量都是定长的。而string/map 则不是定长。反映在内部：
 定长的变量，内存直接保存的值。
 而变长则不然，一般分为顶层和底层。顶层保存底层的地址，底层则保存值。
@@ -660,11 +660,24 @@ binary.Size可以获取定长值、定长值的切片、定长值的指针的字
 这就表明，unsafe.Sizeof([]int32)取不到数据的内存大小，binary.Size可以取到。
 但当参数是定长的结构体（所有成员都是定长），则两个都可以取到正确的大小。
 
+@struct转为[]byte
+依据slice的这些特点，在将定长的struct转为[]byte时，可以创建一个sliceHeader实例，使用binary.Size()来获取待转struct的大小。
+然后指定slice的Data（uintptr类型）为 struct对应指针的uintptr类型。（即指定Data保存的指针为struct的指针。这样就意味这这个slice的数据为指针对应的数据（struct））
+
+将这个sliceHeader实例的指针转为[]byte类型的指针即可。
+
+
+@[]byte转为struct
+根据sliceHeader的特点，[]byte转为struct很简单了：
+将[]byte的指针修改为sliceHeader指针，获取sliceHeader的Data。将Data修改为struct的指针即可
 
 
 
+##slice互转 例如[]int32与[]byte互转##
 
-
+根据slice类型的特点，在slice之间互相转换时，除了要把cap/Len调整为目标slice的对应大小时，还要考虑到一点不同：
+目标sliceHeader的Data字段赋值，Data不能够在赋值为原slice的指针，因为原来slice的指针对应的实际上是sliceHeader，因此正确的做法是将Data赋值为目标sliceHeader的Data。
+这样就可以做到完美的转换！
 
 
 

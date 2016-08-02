@@ -602,7 +602,7 @@ bufio库
 bufio.ReadLine() 或者 bufio.ReadString('\n') 则可以一行一行的读取，结果会大量节省内存。
 注：使用ioutil.ReadAll()后，手动使用runtime.GC()，也是会释放掉读取进来文件的内存的。但是这么做显然没有bufio库方案合理。
 
-
+除此之外还有 bufio.NewWrite()对象
 
 
 
@@ -683,11 +683,34 @@ binary.Size可以获取定长值、定长值的切片、定长值的指针的字
 
 
 
+关于0802的坑
+[]int或者struct（定长）转为[]byte时，有两种思路：
+1 最快速便捷的方式，使用 binary.LittleEndian.PutUint64  将需要的字段转为[]byte保存。
+当[]byte转回[]int/struct时，使用binary.LittleEndian.Uint64杰出int64即可，该方法简单明了一目了然。
+缺点：  慢  内部转换需要重新赋值变量。
+
+2 指针映射：  创建sliceHeader对象，通过修改其Data来达到 struct->[]byte
+优点：快，省空间
+缺点：思路有点绕
+
+
+可以发现，以上这两者是互通的，使用1的方式生成的[]byte文件，可以使用2的方式直接映射到一个slice或者struct上面，使用2创建的[]byte文件，用1的方式也可以解出来。
+
+
+坑：
+在使用1的方式解一个比较大的[]byte文件时，开始的做法是创建了一个单条数据长度的[]byte，反复调用file.Read(byte)。然后拆解这个byte，结果发现，这种方式有很大的问题，会稳定可重现的出现读取错误。
+然后改为用偏移的方法读取，每次仍然读取单条数据长度的[]byte，不同的是使用file.ReadAt(byte,index),不断修改index,读取下一组数据，修改以后数据完全正常。
+最后，参考代码，使用file.Read()方法并非不可取，只要将byte的长度设置的大一些，不要设置为单条长度，可以为单条长度×10000这种，然后在对这个大容量的byte做偏移取值，测试后，完全正常。
 
 
 
 
 
+
+
+
+
+双向链表？
 
 
 

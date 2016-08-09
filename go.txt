@@ -1,0 +1,721 @@
+﻿go语言笔记
+
+1、简介
+所有的go文件必须以package something作为开头。
+
+在go中，声明变量和赋值是两个过程
+var a int
+a=1
+
+s:="abc"
+
+var(
+	a int
+	b bool
+)
+
+字符串：单引号“‘”表示一个字符，不能包裹字符串
+Go中，字符串是不可以改变的
+s:="123" or
+s:=`123
+23`
+
+switch.. case
+case的条件匹配成功后 默认是不往下执行的，除非使用fallthrough关键字
+
+
+
+array
+定义  var arr [10]int
+多维数组定义
+arr := [3][2]int{{1,2},{3,4}}
+array 类型为值传递
+
+
+
+slice（切片）
+slice为引用传递
+
+关于slice中长度、容量和底层原理：
+slice保存原数组的值、指针。所以创建的slice，包括在此基础上进一步切片创建的slice，其都指向相同的一个数组。
+因此，这些slice的值发生了改变，相应的其他的slice和原始数组的值都会改变。
+最初的slice创建时，底层会创建一个数组，长度为slice的cap
+如果新的slice添加元素(append!)超出底层数据的len时，则会分配一个更大的数组。 返回的 slice 会指向这个新分配的数组。
+
+此时，这个slice就与原先的slice没有任何关系了。
+在大批量添加数据时，建议一次性分配足够大的空间，以减少内存分配和数据复制开销
+
+slice类型的值可以是结构体等特殊类型
+a := []struct{
+	x int
+	y int
+}{{1,2},{3,4}}
+
+range 可以对slice迭代
+每次迭代返回两个值，第一个是下标key,第二个是值
+可以用_,v = range arr 来只取一个值
+
+[][]T，是指元素类型为 []T
+
+
+slice内存泄露研究
+当slice使用append增加空间时，会重新分配一个更大的内存空间，这么做的结果就是，新分配的内存空间与原有的内存没有任何关系，但原来的内存空间并没有释放掉。
+当然，这部分内存go也会GC回收掉（？）
+如果一开始，slice的容量不够大，在后期通过append来扩大slice容量，会造成严重的内存泄露。容量为10的slice 20000000次append  与  容量为20000000的slice，append20000000次，效率天壤之别。
+
+
+
+
+
+
+
+
+
+
+函数
+func add(x int, y int) int Z
+返回值也必须定义
+没有参数的 return 语句返回各个返回变量的当前值
+支持不定长的变参，变参本质上就是 slice。只能有⼀一个，且必须是最后⼀一个。
+
+   
+
+
+条件语句
+if、for都不需要用（）括住条件，但是｛｝是必须的
+
+作用域：
+if条件内可以定义变量，作用域仅限于if范围内  （else内也可以使用）
+函数外定义的变量作用域是全局。函数内可以直接调用使用
+函数内定义的变量作用域仅限于函数内
+
+defer 语句会延迟函数的执行直到上层函数返回。
+按照后进先出的顺序调用被延迟的函数调用
+关键字 defer 用于注册延迟调用。这些调用直到 ret 前才被执⾏行，通常用于释放资源或错误处理
+
+
+
+标签：
+可以为一段程序定义标签，使用continue/goto/break可以跳转到标签或者跳出程序
+
+
+指针
+指针保存了变量的内存地址  
+&符号会生成一个指向其作用对象的指针
+*符号表示该指针的值
+a:=1
+&a    //内存地址
+*&a   //1
+指针不能运算
+
+
+struct 结构体 值类型，赋值和传参会复制全部内容
+使用点号来访问	使用点号来访问
+成员支持指针	 
+typa a struct{	typa a struct{
+	x int		x int
+	y int		y int
+	node *int	 
+	node1 *self_struct	 
+}	}
+a{1, 2}.x  //1   error 没有包含全部字段	a{1, 2}.x  //1
+顺序初始化必须包含全部字段，否则会出错	 
+空结构可以实现没有 "状态" 只有⽅方法的 "静态类"，类似	 
+type null struct{}	 
+func(n null) name(){}
+
+数组
+[n]T 是一个有 n 个类型为 T 的值的数组
+slice
+[]T 是一个元素类型为 T 的 slice
+多维度定义
+[][]string{
+	[]string{"1","3","3"},
+	[]string{"1","3","3"},
+}
+
+表达式
+s[lo:hi]
+表示从 lo 到 hi-1 的 slice 元素，含前端，不包含后端。因此
+s[lo:lo]
+是空的，而
+s[lo:lo+1]
+有一个元素
+
+
+
+关于变量声明的一点想法：
+目前可知，变量声明赋值有两种方式
+1、分步
+	var [name] [type]
+	[name] = [type]  or  [name] = make([type])
+2、一次完成
+	[name] := [type] or [name] := make([type])	
+
+声明后的变量，不可以被再次声明，
+其次，再没有类型转换下，变量的类型不能为非声明的类型！与php大不相同！	
+
+不要被make关键字误导，该方法是基于变量的类型产生一个值。并非声明。
+map在声明后，其值为nil，不能赋值。在赋值之前，必须使用make来创建，或者使用:=完成声明、赋值	
+
+	
+不可以对map中取出的值的成员直接进行修改：	 
+a:=map[int]struct{	 
+	x int	 
+	y int	 
+}	 
+a[1].x=xxx  //error	 
+除非直接赋值 a[1]=xxx	 
+原因： map中的元素没有保存地址，是不可寻址的。
+给出的理由是：如果保存地址的话，map一旦改变删除元素会重新分配内存空间，原有的内存地址就会不可用。
+可以在map中保存指针来达到操作元素struct的目的
+map[int]*struct{}
+
+map的遍历是随机无序的。
+
+
+
+
+	 
+可以在迭代时安全删除键值   delete(map,key)
+
+range ：返回（索引，值）或者（键，值）
+⽀支持 string/array/slice/map/channel
+
+结构体的声明，
+type [name] struct {
+	
+}
+相当于使用class前的声明
+
+
+方法：
+方法总是绑定对象实例，可以看作是类方法。
+不能对来自其他包的类型或基础类型定义方法。
+换句话说，自定义的type可以定义方法，但内置的如int、string、float64等类型是不能定义方法的
+
+go中没有类，可以通过在结构体上定义方法来模拟类
+当方法接受者是结构体的指针时，方法操作的是结构体的指针，对其操作将会改变其初始值。
+当接受者是结构体（非指针），方法操作的是结构体值的副本。不会改变初始值
+type s struct{
+	X，Y float
+}
+//*s就是结构体的指针
+func (a *s) myfunc(){
+	a.X=***
+	a.Y=***
+}
+
+接口：
+接口的作用：golang中，接口是一些方法的集合。当任意的类型只要实现了接口中的所有方法，那么所有该接口可以使用的方法或者场合，实现接口的类型均可以使用。
+例如：
+type inter interface{
+	fname()
+}
+func fname2(i inter){
+	
+}
+只要有类型实现了fname方法，在使用inter的地方如fname2即可把类型传入
+空接口：
+空接口interface{} 没有任何方法签名，也就意味着任何类型都实现了空接口
+所以，func name(i interface{}) 这个方法可以接受任何类型的参数，例如fmt中的Printf之类的方法
+Type switch与Type assertions(类型推断):
+x.(T)
+其中，x必须为接口类型（即interface{}）
+
+技巧：
+通过编译器来确定某个类型是否实现了某个接口。
+var _ myInter = (*myType)(nil)
+本质就是声明一个myInter类型的变量并尝试使用某一类型进行赋值。
+*myType实现了所有mytype所实现的接口，但myType只实现了myType的方法，所以此处使用*myType即可
+
+
+
+
+
+
+Stringers fmt 包
+type Stringer interface {
+    String() string
+}
+fmt的输出方法里面，返回的实质上就是Stringer的string()方法返回值。因此可以在自定义type上绑定string()来实现
+
+	
+查看端口对应进程   netstat -nao
+
+
+goroutine  
+
+使用runtime.GOMAXPROCS实现多核并行
+测试结果：
+并发执行的效率与runtime.GOMAXPROCS中的设置数据有关。
+当runtime.GOMAXPROCS设置为1时，表示使用1颗CPU进行数据处理，结果和不使用goroutine所花费的时间相差无几。
+当runtime.GOMAXPROCS设置大于等于本机cpu核心数时，效率最高
+
+
+runtime.Goexit()可以结束当前goroutine，不会影响其他的goroutine，所有goexit之前defer注册的调用都会被执行
+
+
+sync.WaitGroup
+用于等待一组线程的结束。使用add(N)表示等待N组线程结束，同时每个线程结束时应该使用Done()表示线程结束。
+同时，主线程里可以调用Wait方法阻塞至所有线程结束。（Wait方法阻塞直到WaitGroup计数器减为0。）
+
+
+补充：线程数，runtime.GOMAXPROCS实际上是设置进程创建了多少个线程。
+linux查看线程： ps aux -L PID  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+goroutine 在相同的地址空间中运行，因此访问共享内存必须进行同步
+time.Sleep(100 * time.Millisecond)
+
+channel 
+channel的操作只有4种方式：
+创建channel(make函数实现，分为有缓存和无缓存两种)
+向channel中添加数据（channel<-data)
+从channel中读取数据（data<-channel）;
+关闭channel(通过close()函数实现，关闭之后无法再向channel中存数据，但是可以继续从channel中读取数据）
+
+其中无缓冲channel在读和写是都会阻塞，而有缓冲channel在向channel中存入数据没有达到channel缓存总数时，可以一直向里面存，直到缓存已满才阻塞
+
+关于无缓存channel的总结：
+读写都会阻塞，例如：
+ch :=make(chan int)
+ch<-1
+go func(){fmt.println(<-ch)}()
+上面的代码会造成死锁，原因是，ch<-1这一步会造成主协程阻塞，因而下面的go协程无法执行。
+因此，在无缓存channel中，存取数据不能放入同一个协程。防止死锁出现。同时，应该先使用go协程对channel进行操作造成阻塞，同时在主携程中解锁channel。总之，必须go协程在前，主协程在后
+
+
+有缓存的channel:
+是否阻塞通过判断缓冲区：如果缓冲区已满，发送被阻塞，如果缓冲区为空，接收被阻塞
+如果有指定close(channel)，则可以用v:=range channel  或者  v,ok=<-channel的方式来取出channel的值，否则会造成死锁。（因为channel未关闭，因此会继续执行<-channel）
+for v:=range chan{
+	
+}
+
+runtime.NumGoroutine可以查看当前有多少go协程
+
+使用select和time.After可以实现超时处理。
+
+循环 `for i := range c` 会不断从 channel 接收值，直到它被关闭
+
+
+
+
+
+
+标准库：
+time库
+主要类型
+
+1、Time类型 相当于时间对象，有一系列时间操作函数。
+T.Unix() //返回Time对象的unix时间戳
+T.sub(t) //T-t的时间差，duration类型
+T.Format(layout) //格式化一个时间  layout为“2006-01-02 15:04:05”类似
+T.add(duration类型) //返回T+d后的TIME对象，d可为负值
+Now()  //返回当前时间 Time对象
+Parse(layout,value string)  //根据layout模板解析一个时间，返回TIME对象
+
+
+2、Duration类型  一段时间，周期，基本但是为纳秒。可以使用 time.Second *10  来表示10s
+Since(t) // 返回从t时间开始到现在经过的时间，返回duration类型
+int64(time.Since(t).Seconds())  返回t到现在的秒数
+
+
+3、Timer类型  单次时间事件，Timer到期，发送当前时间到C
+NewTimer()
+eg:
+d := time.NewTimer(time.Second*1)
+<-d.C
+doSomeThing()
+可以做到延迟处理
+
+4、函数
+Sleep(duration类型)  延迟处理
+After(duration类型)
+
+
+
+os库
+操作系统函数
+
+1、函数
+Exit(code)  当前程序以给出的code退出，defer不会执行
+Mkdir(string,code)  创建文件夹
+MkdirAll(string,code)  可以创建"1/2/3/4"这样层级的目录
+Truncate(string,size) 修改文件大小，对不存在的文件可以创建
+
+
+2、File类型
+Create(name)   创建name文件，返回*File类型
+Open(name)	  打开name文件or目录，返回*File类型
+F.Readdir(n int)  返回目录下n个[]FileInfo类型，当n=0时，返回目录下所有内容
+F.Readdirnames(n int)  返回目录下n个[]string 文件名。操作会被F.Readdir影响
+
+
+strconv库  
+ParseInt(s string, base int, bitSize int)   将任意进制表示的数字（字符串类型）转为int
+FormatInt(i int64, base int) string   将 int 型整数 i 转换为字符串形式（任意进制）
+
+
+
+
+私有变量
+在一个包中，一个名字是大写字母开头的，则这个名字是导出的（可被外部访问操作的，可以是结构体、方法、结构体内的字段等），如果这个名字是小写的，则为私有变量，只能在包内部访问
+
+unsafe.Pointer
+任意类型的 指针 ，均可转化为unsafe.Pointer类型(只能是指针）
+
+正常情况下，外部是不能够更改私有变量的值。但是，unsafe.Pointer类型有一下特性：
+1) 任意类型的指针可以转换为一个Pointer类型值
+2) 一个Pointer类型值可以转换为任意类型的指针
+3) 一个uintptr类型值可以转换为一个Pointer类型值
+4) 一个Pointer类型值可以转换为一个uintptr类型值
+
+因此，我们可以通过unsafe.Pointer类型来绕过限制，更改私有变量。
+
+反射
+反射Values为了修改它们所表示的东西必须要有这些东西的地址
+如何获取struct内部的元素。
+通过反射可以实现。但问题是，非导出元素（私有成员）是不能通过interface()方法返回内容的。
+现在要返回data结构体的所有成员，保存在[]string中。
+v:=reflect.ValueOf(*data)
+values := make([]string, v.NumField())
+for i:=0;i<v.NumField();i++{
+	values[i]=fmt.Sprint(v.Field(i))  这才是最便捷的方式。
+	//values[i]=strconv.FormatInt(v.Field(i).Int(),10) 需要明确知道成员的类型，采用对应的方法
+	//values[i]=v.Field(i).Interface()  data中包含私有成员则无法使用该方法
+}
+
+
+
+os/io 库	
+关于文件的读取和写入的几种方式
+写入：
+io.WriteString(w Writer, s string)
+ioutil.WriteFile(filename string, data []byte, perm os.FileMode) 
+*File.Write(b []byte)    
+*File.WriteString(s string) 
+
+
+读取：
+io.ReadFull(r Reader, buf []byte) 
+ioutil.ReadAll(r io.Reader)       快
+ioutil.ReadFile(filename string)  快
+*File.Read(b []byte)		  
+bytes.Buffer.ReadFrom(r io.Reader) 快
+最优的方式就是使用ioutil。原理就是使用了bytes.Buffer
+
+
+
+目的：struct转为byte
+
+byte，字节类型。任何文件、网络传输的数据都是字节。（任何英文、中文都可以用字节表示）。
+因此，文件的读取、保存 本质上都是对[]byte类型的处理。
+因此在文件存取中，[]byte是最为重要的类型
+
+一般流程：将字符串转为[]byte存入文件；读取文件读出[]byte转为字符串。 中间的转化过程会有很高的内存开销。因此，最佳的方案是挑过(string)([]byte)/[]byte(string)流程。直接操作[]byte
+内存消耗查看：runtime.MemStats类型
+
+指针与值的关系，保存指针是否有用？？
+gob可以直接保存struct
+
+类型断言：x.(T)
+x.(T）断言x的动态类型与T相同
+
+
+位运算
+& 按位与  |按位或  <<左移  >> 右移   ^a 取反  a^b 异或
+取反与异或操作符一样，取反是单目，异或是双目
+应用：
+可以使用位运算来表示状态组合。
+例如，文件的状态有：
+可读、可写、可执行、可删除。
+我们可以定义不同的状态：
+read  1<<0
+write 1<<1
+exec  1<<2
+del   1<<3
+
+在上面的基础上，则可以随定义一组状态的组合，例如
+read|write|del
+write|exec
+等。
+例如状态值 7 （二进制 111 ）表示  文件拥有read/write/exec权限。
+如何判断是否拥有某个权限：
+if  statu & read  !=0
+删除权限
+statu &= ^read
+思路：状态值取反后，除了标记位为0，其余都为1，在此条件上做&操作，则可以顺利删掉状态。
+
+
+
+int类型
+go下的int类型默认是8个字节，即int64。
+使用unsafe.Sizeof()可以获取变量占用的字节数。
+
+
+
+
+Json生成
+使用json.Marshal()可以将给的值转为json
+注：非导出变量不会被转为json key。
+
+
+重定向错误 2>%261  （2>&1)
+go程序执行时，产生的panic错误，可以作为标准化错误输出重定向出来：
+./goPro 2>panic.log
+
+
+
+
+
+
+Sort排序
+sort可以对slice和用户定义的slice数据集合进行排序
+要使用sort排序，必须实现sort的interface接口：
+Len() int 元素个数
+Less(i,j int) bool   i是否比j小
+Swap(i,j) 交换i,j
+
+实现了即可使用
+Sort()方法/Reserve()方法 排序
+
+
+i:=sort.Search(l int,func(i int) bool) int   使用 二分法 搜索 满足func的最小索引i ,所以这个数据结构必须是有序的
+
+SearchInts([]int ,x)
+SearchFloats([]float,x)
+SearchStrings([]string,x)
+在slice中查找x出现的位置。注意：slice必须是递增顺序的slice。可以事先用sort.Sort(sort.IntSlice([]int))来排一下顺序
+
+
+
+rune类型
+int32的数字，可以表明所有unicode字符类型
+len(string)时，返回的并不是字符串的长度，而是字符串 `字节`的长度。
+len([]rune(string))  这样才是我们要的字符串长度。
+range一个字符串时，val的类型就是rune
+
+
+file读写坑：
+ os.OpenFile(file, os.O_CREATE|os.O_WRONLY, 0777)
+这个模式打开文件写入内容，并不会清空文件重新写，而且仅仅覆盖写入数据长度的原始数据，比如：文件内容为abcdefg,如果写入：ddd，
+则文件内容为ddddefg,不会清空文件。
+只有加上 os.O_WRONLY|os.O_TRUNC|os.O_CREATE才能达到清空重写的效果
+
+
+
+敏感词过滤算法：
+敏感词库数据：7W条+
+原来的做法：循环每一个敏感词，在文章中查找敏感词是否出现。
+优化后：
+首先：
+1 将所有的敏感词的第一个字符存为map(firstChar),所有的字符也存为map（allChar),最后，以badword为key，存为一个map(badword)
+2 遍历文章，取逐个字符，首先在firstChar map中找是否存在，不存在继续往下一个字符，如果存在：
+	在allChar中找下一个字符是否存在，如果存在，查看目前的字符串是否在badword中存在。
+
+
+
+new 
+slice/数组  初始化  分配空间的问题。
+
+
+
+
+Printf(format)
+Sprintf(format)
+format:
+%b  表示为二进制
+%d	 表示为十进制
+%o  表示为八进制
+%x  表示为十六进制
+%016x 表示为十六进制，宽度为16，不满16前面补0
+
+
+
+//debug
+go tool pprof -inuse_space costJifenUser  http://localhost:6060/debug/pprof/heap
+
+_ "net/http/pprof"
+
+go func() {
+	log.Println(http.ListenAndServe("localhost:6060", nil))
+}()
+
+ch := make(chan int)
+<-ch
+
+go install /go build 区别
+go install 会在pkg中生成库文件（.a) 	如果有main文件，则会在bin中生成可执行二进制文件
+go build 只对main文件生效，在当前文件所在的目录下生成一个二进制文件
+
+go instal /go get 都要依赖GOPATH，go get 会默认下载到第一个GOPATH中。go install XXX 则会在GOPATH/src下面寻找XXX库是否存在。
+
+
+
+http库
+创建一个服务器：
+首先要为具体的地址绑定路由：
+绑定路由可以使用：
+	http.Handle(path,Handler)
+	http.HandleFunc(path,func(){})
+区别：http.HandleFunc和http.Handle本质上一样，差别就是http.HandleFunc()参数只需要传入一个func (w http.ResponseWriter, r *http.Request)，handleFunc会在方法内部将该func转为handler对象，而Http.Handle()传入的必须是Handler对象，即需要自己实现Handler的接口。可以使用http.HandlerFunc类型，将自己的func转为HandlerFunc类型，该类型已经实现了Handler接口。
+因此可以发现，使用http.HandleFunc是比较方便的。
+
+绑定好路由之后，才可以开始监听端口
+http.ListenAndServe
+
+
+http.StripPrefix
+将前缀去掉。为什么要使用这个方法？
+例如，在localhost/tmp/下绑定一个/tmp的fileserver。  我们的目的是访问/tmp/是列出服务器上/tmp下面的内容，如果没有使用StripPrefix去掉/tmp/前缀的话，显示的路径将会成为：
+/tmp/tmp/ 而不是我们所需要的。
+因此：
+http.Handle("/tmp/",http.FileServer(http.Dir("/tmp")))  wrong
+http.Handle("/tmp/",http.StripPrefix("/tmp/",http.FileServer(http.Dir("/tmp"))))  right
+
+
+
+
+
+bufio库
+解决内存过大的问题：
+原来读取文件的方式是ioutil.ReadAll(handle)，然后将结果split(str,"\n"）这样的方式。
+结果在读取大文件的时候内存占用相当严重。80M的文件，经过一些处理，内存居然要占用到200M以上，仔细想想，其实就是ioutil.ReadAll会一次性将所有的文件读入内存，因此内存占用过大很正常。
+使用bufio.NewReader(handle)
+bufio.ReadLine() 或者 bufio.ReadString('\n') 则可以一行一行的读取，结果会大量节省内存。
+注：使用ioutil.ReadAll()后，手动使用runtime.GC()，也是会释放掉读取进来文件的内存的。但是这么做显然没有bufio库方案合理。
+
+除此之外还有 bufio.NewWrite()对象
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+DARK TRICK
+关于黑魔法，核心是通过直接修改指针的类型达到struct/slice/string  这些数据与[]byte数据互相转化。而不需要通过内部机制复制转化。从而达到效率最佳。
+http://studygolang.com/articles/2909
+关于slice 和 string在golong中的底层：
+slice和string的本质是一个结构体，在reflect中有体现：
+type StringHeader struct {
+    Data uintptr
+    Len  int
+}
+
+type SliceHeader struct {
+    Data uintptr
+    Len  int
+    Cap  int
+}
+##string和[]byte互转##
+因为本身StringHead和SliceHead的结构是类似的（即内存对齐（需在研究一下）），因此可以通过直接修改指针类型而不需要直接去取Data字段。
+func byteString(b []byte) string {
+	return *(*string)(unsafe.Pointer(&b))
+}
+
+##struct和[]byte互转##
+首先，要引入一个定长(fixed-size)的概念。   int32 int64  这些固定字节的变量都是定长的。而string/map 则不是定长。反映在内部：
+定长的变量，内存直接保存的值。
+而变长则不然，一般分为顶层和底层。顶层保存底层的地址，底层则保存值。
+
+slice有点不同：
+例如：[]int32   这个slice也是分为顶层和顶层。顶层为其sliceHeader的指针，底层有三个key,Len/Cap 为长度/容量。 Data则为uintptr类型。因为[]int32成员的类型为int32定长类型，因而，Data里保存的指针也是直接保存值，（内存的长度应该是通过len/cap来确定），因此也可以看做是一个定长变量
+
+
+获取内存大小可以使用： unsafe.Sizeof()和binary.Size()，两者都可以获取定长类型的内存占用。不同之处是：
+unsafe.Sizeof中的参数为string/slice时，其返回的大小是顶层的大小。即string为16（stringHeader的大小）slice为24（sliceHeader的大小），因此，unsafe.Sizeof([]int32)并不会取到数据的大小
+binary.Size可以获取定长值、定长值的切片、定长值的指针的字节大小。当参数不是定长值时，则返回-1。
+
+这就表明，unsafe.Sizeof([]int32)取不到数据的内存大小，binary.Size可以取到。
+但当参数是定长的结构体（所有成员都是定长），则两个都可以取到正确的大小。
+
+@struct转为[]byte
+依据slice的这些特点，在将定长的struct转为[]byte时，可以创建一个sliceHeader实例，使用binary.Size()来获取待转struct的大小。
+然后指定slice的Data（uintptr类型）为 struct对应指针的uintptr类型。（即指定Data保存的指针为struct的指针。这样就意味这这个slice的数据为指针对应的数据（struct））
+
+将这个sliceHeader实例的指针转为[]byte类型的指针即可。
+
+
+@[]byte转为struct
+根据sliceHeader的特点，[]byte转为struct很简单了：
+将[]byte的指针修改为sliceHeader指针，获取sliceHeader的Data。将Data修改为struct的指针即可
+
+
+
+##slice互转 例如[]int32与[]byte互转##
+
+根据slice类型的特点，在slice之间互相转换时，除了要把cap/Len调整为目标slice的对应大小时，还要考虑到一点不同：
+目标sliceHeader的Data字段赋值，Data不能够在赋值为原slice的指针，因为原来slice的指针对应的实际上是sliceHeader，因此正确的做法是将Data赋值为目标sliceHeader的Data。
+这样就可以做到完美的转换！
+
+
+
+
+
+关于0802的坑
+[]int或者struct（定长）转为[]byte时，有两种思路：
+1 最快速便捷的方式，使用 binary.LittleEndian.PutUint64  将需要的字段转为[]byte保存。
+当[]byte转回[]int/struct时，使用binary.LittleEndian.Uint64杰出int64即可，该方法简单明了一目了然。
+缺点：  慢  内部转换需要重新赋值变量。
+
+2 指针映射：  创建sliceHeader对象，通过修改其Data来达到 struct->[]byte
+优点：快，省空间
+缺点：思路有点绕
+
+
+可以发现，以上这两者是互通的，使用1的方式生成的[]byte文件，可以使用2的方式直接映射到一个slice或者struct上面，使用2创建的[]byte文件，用1的方式也可以解出来。
+
+
+坑：
+在使用1的方式解一个比较大的[]byte文件时，开始的做法是创建了一个单条数据长度的[]byte，反复调用file.Read(byte)。然后拆解这个byte，结果发现，这种方式有很大的问题，会稳定可重现的出现读取错误。
+然后改为用偏移的方法读取，每次仍然读取单条数据长度的[]byte，不同的是使用file.ReadAt(byte,index),不断修改index,读取下一组数据，修改以后数据完全正常。
+最后，参考代码，使用file.Read()方法并非不可取，只要将byte的长度设置的大一些，不要设置为单条长度，可以为单条长度×10000这种，然后在对这个大容量的byte做偏移取值，测试后，完全正常。
+
+ioutil is a shit。 会占用大量的内存。
+
+
+
+
+
+pipeline?
+双向链表？
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,23 @@
+{
+  "name": "Octopus/Octopus",
+  "repositories": [
+    {"type": "composer", "url": "http://packagist.2345.com/repo/private/"}
+  ],
+  "require": {
+    "php": ">=5.3.0",
+    "Octopus/PdoEx": "1.0.13",
+    "Public/Xmpush": "1.0.0",
+    "Octopus/SendSms":"1.0.0.0",	
+    "Octopus/Upload":"0.2.1",
+    "Public/XgPush": "1.0.2"
+  },
+  "config": {
+    "process-timeout": 1800,
+    "secure-http" :false
+  },
+  "autoload": {
+    "psr-4": {"": ["classes"]},
+    "classmap" : ["thirdlibs"]
+  }
+
+}

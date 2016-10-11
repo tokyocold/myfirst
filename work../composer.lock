@@ -1,0 +1,248 @@
+{
+    "_readme": [
+        "This file locks the dependencies of your project to a known state",
+        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
+        "This file is @generated automatically"
+    ],
+    "hash": "bb3b4800e1eeaf2af02b60e0d39235cc",
+    "content-hash": "fb35fb8e1aa00fa83d0ed8f04ac205a9",
+    "packages": [
+        {
+            "name": "Octopus/Logger",
+            "version": "1.1.0",
+            "source": {
+                "type": "git",
+                "url": "git@172.16.0.245:Octopus/Logger.git",
+                "reference": "f14298eed4a5273ab4f01bb0741b9b4d1dc7e1ca"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "http://packagist.2345.com/repo/private/dists/octopus/logger/1.1.0.0/f14298eed4a5273ab4f01bb0741b9b4d1dc7e1ca.zip",
+                "reference": "f14298eed4a5273ab4f01bb0741b9b4d1dc7e1ca",
+                "shasum": null,
+                "mirrors": [
+                    {
+                        "url": "http://packagist.2345.com/repo/private/dists/%package%/%version%/%reference%.%type%",
+                        "preferred": true
+                    }
+                ]
+            },
+            "require": {
+                "php": ">=5.3.0",
+                "psr/log": "~1.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Octopus\\": "src/"
+                }
+            },
+            "time": "2015-07-01 06:29:38"
+        },
+        {
+            "name": "Octopus/PdoEx",
+            "version": "1.0.13",
+            "source": {
+                "type": "git",
+                "url": "git@172.16.0.245:Octopus/PdoEx.git",
+                "reference": "d5ff371a59baf3d715ba72c77fcc8f450ae5df6a"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "http://packagist.2345.com/repo/private/dists/octopus/pdoex/1.0.13.0/d5ff371a59baf3d715ba72c77fcc8f450ae5df6a.zip",
+                "reference": "d5ff371a59baf3d715ba72c77fcc8f450ae5df6a",
+                "shasum": null,
+                "mirrors": [
+                    {
+                        "url": "http://packagist.2345.com/repo/private/dists/%package%/%version%/%reference%.%type%",
+                        "preferred": true
+                    }
+                ]
+            },
+            "require": {
+                "octopus/logger": "1.1.0",
+                "php": ">=5.3.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Octopus\\": "src/"
+                }
+            },
+            "time": "2016-02-23 09:48:57"
+        },
+        {
+            "name": "Octopus/SendSms",
+            "version": "1.0.0.0",
+            "source": {
+                "type": "git",
+                "url": "git@172.16.0.245:jichupingtai/SendSms.git",
+                "reference": "fa2858fbd00ecd91e2c9254eeffc0d79d8b42474"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "http://packagist.2345.com/repo/private/dists/octopus/sendsms/1.0.0.0/fa2858fbd00ecd91e2c9254eeffc0d79d8b42474.zip",
+                "reference": "fa2858fbd00ecd91e2c9254eeffc0d79d8b42474",
+                "shasum": null,
+                "mirrors": [
+                    {
+                        "url": "http://packagist.2345.com/repo/private/dists/%package%/%version%/%reference%.%type%",
+                        "preferred": true
+                    }
+                ]
+            },
+            "require": {
+                "php": ">=5.3.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Octopus\\": "src/"
+                }
+            },
+            "time": "2016-02-25 02:55:36"
+        },
+        {
+            "name": "Octopus/Upload",
+            "version": "v0.2.1",
+            "source": {
+                "type": "git",
+                "url": "git@172.16.0.245:wangyi/upload.git",
+                "reference": "cdab71223d3f6bf134102e03c38fb3aaa89e0aef"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "http://packagist.2345.com/repo/private/dists/octopus/upload/0.2.1.0/cdab71223d3f6bf134102e03c38fb3aaa89e0aef.zip",
+                "reference": "cdab71223d3f6bf134102e03c38fb3aaa89e0aef",
+                "shasum": null,
+                "mirrors": [
+                    {
+                        "url": "http://packagist.2345.com/repo/private/dists/%package%/%version%/%reference%.%type%",
+                        "preferred": true
+                    }
+                ]
+            },
+            "require": {
+                "ext-fileinfo": "*",
+                "php": ">=5.3.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Octopus\\": "src/"
+                }
+            },
+            "time": "2016-05-11 06:55:22"
+        },
+        {
+            "name": "Public/XgPush",
+            "version": "1.0.2",
+            "source": {
+                "type": "git",
+                "url": "git@172.16.0.245:Public/XgPush.git",
+                "reference": "1e26412c029823d624a9ea184393c3b2e3e71dc4"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "http://packagist.2345.com/repo/private/dists/public/xgpush/1.0.2.0/1e26412c029823d624a9ea184393c3b2e3e71dc4.zip",
+                "reference": "1e26412c029823d624a9ea184393c3b2e3e71dc4",
+                "shasum": null,
+                "mirrors": [
+                    {
+                        "url": "http://packagist.2345.com/repo/private/dists/%package%/%version%/%reference%.%type%",
+                        "preferred": true
+                    }
+                ]
+            },
+            "require": {
+                "php": ">=5.3.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "XgPush\\": "src/"
+                }
+            },
+            "time": "2016-09-21 05:18:41"
+        },
+        {
+            "name": "Public/Xmpush",
+            "version": "1.0.0",
+            "source": {
+                "type": "git",
+                "url": "git@172.16.0.245:Public/Xmpush.git",
+                "reference": "6aec6ef084fc52b3351fe2c80b81904b6eb60836"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "http://packagist.2345.com/repo/private/dists/public/xmpush/1.0.0.0/6aec6ef084fc52b3351fe2c80b81904b6eb60836.zip",
+                "reference": "6aec6ef084fc52b3351fe2c80b81904b6eb60836",
+                "shasum": null,
+                "mirrors": [
+                    {
+                        "url": "http://packagist.2345.com/repo/private/dists/%package%/%version%/%reference%.%type%",
+                        "preferred": true
+                    }
+                ]
+            },
+            "require": {
+                "php": ">=5.3.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "xmpush\\": "src/"
+                }
+            },
+            "time": "2016-01-18 03:27:02"
+        },
+        {
+            "name": "psr/log",
+            "version": "1.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/php-fig/log.git",
+                "reference": "fe0936ee26643249e916849d48e3a51d5f5e278b"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/php-fig/log/zipball/fe0936ee26643249e916849d48e3a51d5f5e278b",
+                "reference": "fe0936ee26643249e916849d48e3a51d5f5e278b",
+                "shasum": ""
+            },
+            "type": "library",
+            "autoload": {
+                "psr-0": {
+                    "Psr\\Log\\": ""
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "PHP-FIG",
+                    "homepage": "http://www.php-fig.org/"
+                }
+            ],
+            "description": "Common interface for logging libraries",
+            "keywords": [
+                "log",
+                "psr",
+                "psr-3"
+            ],
+            "time": "2012-12-21 11:40:51"
+        }
+    ],
+    "packages-dev": [],
+    "aliases": [],
+    "minimum-stability": "stable",
+    "stability-flags": [],
+    "prefer-stable": false,
+    "prefer-lowest": false,
+    "platform": {
+        "php": ">=5.3.0"
+    },
+    "platform-dev": []
+}

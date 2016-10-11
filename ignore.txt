@@ -472,7 +472,8 @@ find ./
 
 
 linux下的svn gui工具可以使用rabbitvcs，rabbitvcs对不同的桌面环境都有对应的软件，gnome,kde,以及mint下面的nemo-rabbitvcs，效果一流
-
+gedit下，中文乱码的解决：
+gconftool-2 --set --type=list --list-type=string /apps/gedit-2/preferences/encodings/auto_detected "[BIG5,UTF-8,CURRENT,ISO-8859-15,UTF-16]"
 
 
 

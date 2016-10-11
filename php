@@ -19,12 +19,25 @@ apache配置：
 	Options +Indexes +ExecCGI
 否则会报403Forbidden
 
+apache的变量在/etc/apache2/envvars文件中
+apache2.4+ 设置目录权限的语句为：
+Require all granted 
+原来的语句是
+Order allow,deny
+Allow from all
+
+
 
 
 
 研究 mpm prework  php-fmp
 
 php-fmp：
+
+
+
+
+
 
 
 nginx配置：
@@ -47,3 +60,46 @@ ps aux|grep apache
 
 
 目标 个人博客
+
+
+
+php扩展安装
+安装php扩展，可以直接尝试apt-cache找一下有没有对应的软件包，如果没有或者安装包有问题，可以自己编译安装，自己编译安装并不复杂，主要用phpize这个工具，phpize数据php-dev这个软件，安装后就可以使用phpize，二进制库可以在 http://pecl.php.net/中搜索下载：
+$ cd extname
+$ phpize
+$ ./configure
+$ make
+# make install
+执行完成后，在php.ini中添加extension=extname.so重启即可。
+整体来说很简单。
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -479,7 +479,60 @@ gconftool-2 --set --type=list --list-type=string /apps/gedit-2/preferences/encod
 
 
 
+#ssh#
+ssh相关命令：
 
+##一  ssh是一种网络协议，用于计算机之间的加密登陆，如果使用ssh登陆远程计算机，密码将会加密，即使中途截获也不会被泄露。##
+##二 中间人攻击##
+ssh登陆过程：
+1 远程主机收到登陆请求，把自己的公钥发给用户
+2 用户使用公钥，将登陆密码加密后发送回来
+3 远程主机使用自己的私钥解密密码，如果正确就同意登陆
+风险：
+如果有人冒充远程主机，截获了请求，将自己伪造的公钥发送给用户，那么用户很难辨别真伪。因为不像https协议，SSH协议的公钥是没有证书中心（CA）公证的，也就是说，都是自己签发的。
+可以设想，如果攻击者插在用户与远程主机之间（比如在公共的wifi区域），用伪造的公钥，获取用户的登录密码。再用这个密码登录远程主机，那么SSH的安全机制就荡然无存了。这种风险就是著名的"中间人攻击"（Man-in-the-middle attack）。
+
+##登陆##
+1 口令登陆
+如果是第一次登陆远程主机，会出现：
+$ ssh user@host
+　　The authenticity of host 'host (12.18.429.21)' can't be established.
+　　RSA key fingerprint is 98:2e:d7:e0:de:9f:ac:67:28:c2:42:2d:37:16:58:4d.
+　　Are you sure you want to continue connecting (yes/no)?
+如果接受：yes
+则表明用户接受该公钥 开始输入密码
+
+所有用户授信登陆的主机 都会保存在 $HOME/.ssh/know_hosts文件中，下次再登陆时，如果在know_hosts中找到，则跳过授信过程直接输入密码登陆
+
+2 公钥登陆
+原理：将用户的公钥存储在远程主机上，登陆时，远程主机发送一段随机字符串过来，用户用自己的私钥加密后发回，主机使用公钥解密，如果结果一致，则同意登陆。
+过程：
+1> 生成密钥  ssh-keygen
+2>发送密钥至远程  ssh-copy-id user@host，
+3> 如果不行，检查远程 /etc/sshd/sshd_config ,下面注释是否去掉：
+	RSAAuthentication yes
+　　PubkeyAuthentication yes
+　　AuthorizedKeysFile .ssh/authorized_keys
+4>重启
+	service ssh restart
+注意：发送公钥至远程，实质上是将.pub的内容append到远程.ssh/authorized_keys文件末尾
+
+
+##命令##
+简单：
+ssh -p 2222 user@host
+生成密钥
+ssh-keygen -b 1024 -t rsa 
+在know_hosts中寻找信任主机：
+ssh-keygen -H -F [host]:port
+从know_hosts中删除主机：
+ssh-keygen -R [hostname]:port    eg: ssh-keygen -R [45.62.111.76]:27027   ##if works,it will display '# Host [45.62.111.76]:27027 found: line 1 type RSA'
+发送密钥到远程主机：
+实质上是发送公钥，即后缀.pub文件
+ssh-copy-id [-i [identity_file]] [-p port] [username@][host]
+
+ssh-copy-id -i .ssh/myvps.pub -p 27027 45.62.111.76  
+使用该命令后，完美登陆。比对远程服务器$HOME/.ssh/authorized_keys与本地$HOME/.ssh/myvhost.pub内容  一模一样
 
 
 

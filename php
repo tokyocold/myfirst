@@ -86,6 +86,13 @@ $ make
 Q:
 apache documentRoot设置为代码目录的子目录
 
+Q:
+Exception thrown without a stack frame in Unknown on line 0
+A:
+如果用自定义的错误函数代替了原来的错误处理函数，而自定义的错误处理函数也出现了错误，则会报出这个奇怪的错误，注释掉原有的错误处理函数即可。
+set_exception_handler();
+
+Q:PDO调试问题，以及详细操作。
 
 ----------------------------------------------------------------------------------------------
 
@@ -142,12 +149,67 @@ __CLASS__: 当前所处的类     （父类）
 
 
 #composer autoload设定#
-满足psr
+满足psr-4规范的程序，可以在composer.json中添加autoload字段
 
 
+#rowspan colspan无效问题#
+rowspan不会跨越thead/tbody/tfoot作用, 所以要分开写
+   <table>
+        <thead>
+            <tr>
+                <th rowspan="3">header0</th>  #不会对tbody生效
+                <th>header2</th>
+                <th>header3</th>
+                <th>header4</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td rowspan="3"></td>
+                <td>item1</td>
+                <td>item2</td>
+                <td>item3</td>
+            </tr>
+
+        </tbody>
+    </table>
+
+#laravel#
+##php自带的服务器##
+php -S localhost:8000 -t ./public
+可以使用php自带的服务器快速在一个指定目录下搭建服务器环境
+-t 入口文件所在的目录，laravel的入口目录为public
+
+##composer镜像##
+可以使用国内全量镜像
+可以对系统全局配置/单个项目配置
 
 
+##migration##
+数据库版本控制
 
+##mysql 连接出错  ##
+报错：Can't connect to local MySQL server through socket '/var/run/mysqld/mysqld.sock' 
+排查mysql error log。
+使用 ps aux|grep mysql 查看 --log-error 参数 或者error log位置。
+根据error log里的内容首先排查。
+
+查看mysqld状态  service mysql.server status 是正常启动的。连不上原因就说丢失了sock文件
+查找mysqld.sock文件。 find / -name mysqld.sock
+找到文件 /run/mysqld/mysqld.sock   发现是/tmp/mysql.sock的软链接
+建立软链接：
+ln -s /tmp/mysql.sock /var/run/mysqld/mysqld.sock
+问题解决。
+
+
+#建表#
+使用 mysqldump导出的表  第一句都是：
+drop table if exists 'tablename'
+
+这样会导致其他人环境数据丢失，这就是使用migration的原因
+首先创建一个migration:
+php artisan make:migration create_table_users --create=users
+接下来在migration中完善字段。
 
 
 

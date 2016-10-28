@@ -211,6 +211,22 @@ drop table if exists 'tablename'
 php artisan make:migration create_table_users --create=users
 接下来在migration中完善字段。
 
+#Cookie以及Session#
+session的存在是依赖于cookie的，session是通过cookie传递的PHPSESSID来获取服务器的session。因此，无论单独存储cookie或者phpsession都是非常危险的做法。
+安全起见，无论存储session id 还是 uid username 等信息 都需要增加一个签名 sign 来确保当前的cookie确实是真实用户而非伪造的cookie信息。
+经过观察，悟空后台仅仅是通过判断是否存在$_SESSION['adminid']即判断管理员是否登陆，因此，将自己的sessionid在新的浏览器中创建对应cookie即获取到了登陆状态
+积分则多了一层签名校验，除了基础用户信息之外，额外保存了一个服务器生成的签名，该签名使用服务器存在的 密钥  和 用户信息组合生成，因此当有人伪造cookie时，如果不知道服务器密钥以及
+加密方式，则没办法拿到正确的签名，服务器如果校验签名不通过，则认为该cookie信息为伪造的，将$_COOKIE置空即可。
+
+##延伸：##
+高访问量网站，拥有多台web服务器时，使用cookie作为用户的校验，而不是通过session id来获取服务器的session文件储存的用户信息，不失为给好方式。避免了多服务器session同步的问题。
+Q: jifen的Session 同步如何实现
+
+
+
+
+
+
 
 
 

@@ -60,6 +60,21 @@ class User extends Model
         return ['status'=>1,'id'=>$user->id];
     }
 
+    public function is_logged_in()
+    {
+        if(session()->get('user_id'))
+        {
+            return session()->get('user_id');
+        }
+        return false;
+    }
+
+    public function logout()
+    {
+        session()->flush();
+        return ['status'=>1];
+    }
+
     public function has_username_and_password()
     {
         $username = Request::get('username');

@@ -10,28 +10,53 @@
 | and give it the controller to call when that URI is requested.
 |
 */
+function rq($key ='',$default='')
+{
+    if (!$key)
+    {
+        return Request::all();
+    }
+    return Request::get($key,$default);
+}
 function user_ins()
 {
     return new \App\User();
 }
-Route::get('/', function () {
-    return view('welcome');
+function question_ins()
+{
+    return new \App\Question();
+}
+Route::group(['middleware' => ['web']],function(){
+    Route::get('/', function () {
+        return view('welcome');
+    });
+
+    Route::any('/api',function(){
+        return ['version'=>0.1];
+    });
+
+    Route::any('api/user',function(){
+
+        $user = new App\User();
+        return $user->signup();
+    });
+
+    Route::any('api/login',function(){
+        $user = new \App\User();
+        return $user->login();
+    });
+
+    Route::any('api/logout',function(){
+        $user = new \App\User();
+        return $user->logout();
+    });
+
+
+    Route::any('api/question/create',function(){
+        return question_ins()->add();
+    });
 });
 
-Route::any('/api',function(){
-    return ['version'=>0.1];
-});
-
-Route::any('api/user',function(){
-
-    $user = new App\User();
-    return $user->signup();
-});
-
-Route::any('api/login',function(){
-    $user = new \App\User();
-    return $user->login();
-});
 /*
 |--------------------------------------------------------------------------
 | Application Routes

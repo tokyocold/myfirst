@@ -81,7 +81,7 @@ $ make
 2          数据库架构
 3          负载均衡
 4    diy建站
-
+5         单元测试
 
 Q:
 apache documentRoot设置为代码目录的子目录
@@ -202,7 +202,7 @@ ln -s /tmp/mysql.sock /var/run/mysqld/mysqld.sock
 问题解决。
 
 
-#建表#
+##建表##
 使用 mysqldump导出的表  第一句都是：
 drop table if exists 'tablename'
 
@@ -210,6 +210,20 @@ drop table if exists 'tablename'
 首先创建一个migration:
 php artisan make:migration create_table_users --create=users
 接下来在migration中完善字段。
+
+
+##session##
+出现了session失效的问题，google,在$middleware中添加：
+\Illuminate\Session\Middleware\StartSession::class 解决，至于原因。。臣妾不知道啊！！
+A： 应该是在5.2之后，中间件被分为了全局中间件$middleware和中间件组$middlewareGroup,
+StartSession这个中间件并没有注册在全局中而是在中间价组中。其key值为'web',
+因此，只要在routes.php中将原有的请求应用上web中间件组或者将sessionstart注册在全局中间件组即可。
+
+
+##中间件##
+可以理解为 一个http请求 到达目的动作之前的层，没一层都可以检查请求并且完全拒绝它。
+
+
 
 #Cookie以及Session#
 session的存在是依赖于cookie的，session是通过cookie传递的PHPSESSID来获取服务器的session。因此，无论单独存储cookie或者phpsession都是非常危险的做法。
@@ -223,7 +237,9 @@ session的存在是依赖于cookie的，session是通过cookie传递的PHPSESSID
 Q: jifen的Session 同步如何实现
 
 
-
+#::class#
+php 5.5开始,使用 ClassName::class 你可以获取一个字符串，包含了类 ClassName 的完全限定名称。这对使用了 命名空间 的类尤其有用。
+NS\ClassName
 
 
 

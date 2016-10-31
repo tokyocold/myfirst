@@ -1,3 +1,23 @@
 #mysql set类型#
 可以有零或多个值，其值来自表创建时规定的允许的一列值
 可以使用 find_in_set来查询
+
+#mysql 外键#
+mysql innodb引擎支持外键，外键主要的作用是对表的关系进行一种约束。
+有二张表，一张是用户表，一张是订单表：
+1，如果我删除了用户表里的用户，那么订单表里面根这个用户有关的数据，就成了无头数据了，不完整了。
+2，如果我在订单表里面，随便插入了一条数据，这个订单在用户表里面，没有与之对应的用户。这样数据也不完整了。
+如果有外键的话，就方便多了，可以不让用户删除数据，或者删除用户的话，通过外键同样删除订单表里面的数据，这样也能让数据完整。
+
+##外键维护数据完整性的5种方式##
+1 cascade 从父表删除或更新且自动删除或更新子表中匹配的行。
+ON DELETE CASCADE和ON UPDATE CASCADE都可用。
+在两个表之间，你不应定义若干在父表或子表中的同一列采取动作的ON UPDATE CASCADE子句
+
+2，SET NULL: 从父表删除或更新行，并设置子表中的外键列为NULL。如果外键列没有指定NOT NULL限定词，这就是唯一合法的。ON DELETE SET NULL和ON UPDATE SET NULL子句被支持。
+3，NO ACTION: 在ANSI SQL-92标准中，NO ACTION意味这不采取动作，就是如果有一个相关的外键值在被参考的表里，删除或更新主要键值的企图不被允许进行（Gruber, 掌握SQL, 2000:181）。 InnoDB拒绝对父表的删除或更新操作。
+4，RESTRICT: 拒绝对父表的删除或更新操作。NO ACTION和RESTRICT都一样，删除ON DELETE或ON UPDATE子句。（一些数据库系统有延期检查，并且NO ACTION是一个延期检查。在MySQL中，外键约束是被立即检查的，所以NO ACTION和RESTRICT是同样的）。
+5，SET DEFAULT: 这个动作被解析程序识别，但InnoDB拒绝包含ON DELETE SET DEFAULT或ON UPDATE SET DEFAULT子句的表定义。
+
+
+使用外键的话表的数据约束将会由数据库来完成，因此处于性能考虑，互联网应用最好避免使用外键。

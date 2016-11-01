@@ -55,6 +55,10 @@ Route::group(['middleware' => ['web']],function(){
     Route::any('api/question/create',function(){
         return question_ins()->add();
     });
+
+    Route::any('api/question/edit',function(){
+        return question_ins()->edit();
+    });
 });
 
 /*

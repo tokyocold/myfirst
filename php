@@ -223,7 +223,9 @@ StartSession这个中间件并没有注册在全局中而是在中间价组中�
 ##中间件##
 可以理解为 一个http请求 到达目的动作之前的层，没一层都可以检查请求并且完全拒绝它。
 
-
+##pdoexception##
+could not find driver  
+原因 没有安装php5-mysql扩展
 
 #Cookie以及Session#
 session的存在是依赖于cookie的，session是通过cookie传递的PHPSESSID来获取服务器的session。因此，无论单独存储cookie或者phpsession都是非常危险的做法。

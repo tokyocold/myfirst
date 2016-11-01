@@ -3,7 +3,7 @@
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreateTableQuestions extends Migration
+class CreateTableAnswerUser extends Migration
 {
     /**
      * Run the migrations.
@@ -12,15 +12,14 @@ class CreateTableQuestions extends Migration
      */
     public function up()
     {
-        Schema::create('questions', function (Blueprint $table) {
+        Schema::create('answer_user', function (Blueprint $table) {
             $table->increments('id');
-            $table->string('title',64);
-            $table->text('desc')->nullable()->comment('description');
+            $table->unsignedInteger('answer_id');
             $table->unsignedInteger('user_id');
-            $table->string('status')->default('ok');
+            $table->unsignedInteger('vote');
             $table->timestamps();
 
-           // $table->foreign('user_id')->references('id')->on('users');
+            $table->unique(['answer_id','user_id','vote']);
         });
     }
 
@@ -31,6 +30,6 @@ class CreateTableQuestions extends Migration
      */
     public function down()
     {
-        Schema::drop('questions');
+        Schema::drop('answer_user');
     }
 }

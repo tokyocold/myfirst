@@ -18,7 +18,7 @@ class CreateTableUsers extends Migration
             $table->string('username')->unique()->nullable();
             $table->string('phone')->unique()->nullable();
             //$table->string('country_code')->default("+86");
-            $table->string('email')->unique();
+            $table->string('email')->unique()->nullable();
             $table->string('password');
             $table->text('intro')->nullable();
             $table->text('avatar_url')->nullable();

@@ -175,6 +175,44 @@ rowspan不会跨越thead/tbody/tfoot作用, 所以要分开写
     </table>
 
 #laravel#
+##php artisan##
+laravel下 的一个重要的特色就是使用php artisan命令来完成很多工作，
+例如  make:migration   make:model 等。
+
+##数据映射模式##
+laravel的Eloquent ORM是基于数据映射模式建立的。
+默认规则是模型类名的复数作为与其对应的表名，除非在模型类中明确指定了其它名称
+例如  User类  对应的表名 users
+可以使用 php artisan make:model User --migration /-m 来建立model和表
+
+
+#Eloquent中 多对多的操作#
+ps：Eloquent确实有意思！
+多对多关系中，除了两张表（admins/groups），必然还有一张存储这两张表关系的关系表。(admin_group)
+在各自的model中需要确立对应关系，可以在Admin Model中增加一个groups方法：
+    public function groups()
+    {
+        return $this->belongsToMany('\App\Admin')
+            ->withPivot('vote')
+            ->withTimestamps()
+            ;
+    }
+注意：此时调用$admin->groups()返回的实际上是group对象，所以一切delete update操作都是针对group对象。
+如果要操作中间表（admin_group)则可以使用   $admin->groups()->first()->pivot->delete()   pivot属性
+来获取中间表对象。
+
+##debug Sql##
+如果要查看 Orm对象实际上执行的SQL 可以使用 $user->where()->toSql();
+或者 DB::getQueryLog()；
+使用 DB::getQueryLog()前记得要先执行：
+DB::connection()->enableQueryLog();
+
+
+
+
+##attach/detach##
+
+
 ##php自带的服务器##
 php -S localhost:8000 -t ./public
 可以使用php自带的服务器快速在一个指定目录下搭建服务器环境

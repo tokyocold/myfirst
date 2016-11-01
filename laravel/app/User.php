@@ -85,4 +85,12 @@ class User extends Model
         }
         return [$username,$password];
     }
+
+
+    public function answers()
+    {
+        return $this->belongsToMany('\App\Answer')
+            ->withPivot('vote')
+            ->withTimestamps();
+    }
 }

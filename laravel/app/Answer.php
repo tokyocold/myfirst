@@ -97,7 +97,8 @@ class Answer extends Model
            $vote->pivot->delete();
        }
         $answer->users()->attach(session('user_id'));
-        
+
+        return ['status'=>1];
         //dd(DB::getQueryLog());
 
        // $user =  $answer->users();

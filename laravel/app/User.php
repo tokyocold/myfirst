@@ -87,10 +87,65 @@ class User extends Model
     }
 
 
+    public function change_password()
+    {
+        if(!user_ins()->is_logged_in())
+        {
+            return ['status'=>0,'msg'=>'need login'];
+        }
+
+        if(!rq('old_password') || !rq('new_password'))
+        {
+            return ['status'=>0,'msg'=>' password is required'];
+        }
+
+
+    }
     public function answers()
     {
         return $this->belongsToMany('\App\Answer')
             ->withPivot('vote')
             ->withTimestamps();
+    }
+
+    public function changePassword()
+    {
+        if(!user_ins()->is_logged_in())
+        {
+            return ['status'=>0,'msg'=>'need login'];
+        }
+
+        if(!rq('old_password')||!rq('new_password'))
+        {
+            return err('need password');
+        }
+
+        $user = $this->find(session('user_id'));
+
+        if(!Hash::check(rq('old_password'),$user->password))
+        {
+            return err('password err');
+        }
+        $user->password = Hash::make(rq('new_password'));
+        return $user->save()?suc():err('insert failed');
+    }
+
+
+    public function read()
+    {
+        if(!rq('id'))
+        {
+            return err('need id');
+        }
+        $user = $this->find(rq('id'));
+        if(!$user)
+            return err('user not exists');
+
+        $data = array(
+            'usernane' => $user->username,
+            'intro' => $user->intro,
+            'avatar_url' => $user->avatar_url
+        );
+        return $data;
     }
 }

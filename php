@@ -186,6 +186,153 @@ laravel的Eloquent ORM是基于数据映射模式建立的。
 可以使用 php artisan make:model User --migration /-m 来建立model和表
 
 
+##依赖注入and控制反转##
+- 依赖注入：
+类似于我们不能把数据库参数直接写到一个model中，而是引入一个config文件：
+第一阶段：
+config:
+array('host'=>localhost,'username'=>'ash','password'=>123456);
+----------------------model-----------------------
+class model{
+function __construct()
+{
+	mysql_connect($_config('host'),$_config('username')....)一样
+}
+这样我们可以通过修改config文件而减少避免出现万一修改密码时需要修改所有的model文件。
+依赖注入就是这么个情况，将所依赖的类注入到model中，而避免在model中实例化。
+
+目前的情况，我不想使用Mysql，而想使用redis/Mongodb其他的数据存储方式，问题就出现了。我不得不修改所有的Model中 mysql_connect，替换为新的数据存储类型：
+因此，我们可以引入接口：
+interface IData
+{
+	public function get();
+	public function save();
+	....
+}
+
+class model{
+	private $dataHandler;
+	//一种方式，采用构造函数传入来构造。	
+	function __construct(IData $handler)
+	{
+		$this->dataHandler = $handler;
+	}
+	
+	//另一种方式，setter函数
+	function setterDb(IData $handler)
+	{	
+		$this->dataHandler = $handler;
+	}
+
+	
+	function save()
+	{
+		$this->dataHandler->save();
+	}
+	......
+}
+class mysql implements IData{
+	.....
+}
+class redis implements IData{
+	.....
+}
+
+$data = new mysql()
+//替换
+//$data = new redis();
+$model = new model($data);
+
+这样就实现了依赖注入，避免了反复修改多个model类内容（如果有多个model，也需要增加多个new ***()，可以增加一个工厂类，返回一个Data 类型 ，所有的model实例化都传入 Factory::returnDb();）；
+
+
+ok，截止目前一切看上去都很不错。但是，在一个model类中，除了会使用db之外，还可能会有其他乱七八糟的依赖，例如文件存储/日志处理 等等等等的。
+这样，我们就需要不断增加__construct()或者增加setter方法。
+因此，每次调用model之前，我们都不得不这样：
+
+$data = new mysql();
+$file = new file()
+$log = new log();
+$model=new model();
+$model->setterDb($data);
+$model->setterFile($file);
+$model->setterLog($log);
+......
+
+只有做完这些工作，我们才能正常的使用这个Model。即，model类被所依赖的其他类（db/file/log）的生成所控制，必须先建立依赖类才能使用Model，看上去当然是还存在着耦合，因此，这里就用到了控制反转：
+//inversion of control
+class IOC
+{
+	$register=array();
+
+	function bind($name,$val){
+		$register[$name] = $val;
+	}
+
+	function get($name)
+	{
+		return $register[$name];
+	}
+}
+$ioc = new IOC();
+$ioc->bind("data",function(){
+	return new mysql();
+});
+$ioc->bind("file",function(){
+	return new file();
+});
+
+
+class model{
+	function save()
+	{
+		$ioc = new IoC();
+		$ioc->get("data")->save();
+	}
+}
+$model = new model();
+$model->save();
+
+
+这样，就实现了控制反转，model类不必在data类实例好之后才能使用。只要在最初将所有需要用到的依赖类绑定到 Ioc上面。这样不仅解除了依赖，甚至在不需要用到save()的时候都不会实例化依赖类，节省了资源。
+
+现在在回想angular的依赖注入，就明白其真正的意义了。
+
+
+##匿名函数##
+赞赞赞
+php5.3后引入的。很强大！
+可以将匿名函数绑定到变量上。
+$a = function(){return 'aaa'}
+可以作为回调使用
+function call($a,$callback)
+{
+	$callback();
+}
+##instanceof关键字##
+类运算符，可以确定一个php变量是否属于一个类的实例。
+if($classback instanceof Closure)
+...
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #Eloquent中 多对多的操作#
 ps：Eloquent确实有意思！
 多对多关系中，除了两张表（admins/groups），必然还有一张存储这两张表关系的关系表。(admin_group)
@@ -279,6 +426,9 @@ Q: jifen的Session 同步如何实现
 php 5.5开始,使用 ClassName::class 你可以获取一个字符串，包含了类 ClassName 的完全限定名称。这对使用了 命名空间 的类尤其有用。
 NS\ClassName
 
+#phpStorm 快速输入#
+class .class + Tab 快速生成
+id    #id + tab
 
 
 

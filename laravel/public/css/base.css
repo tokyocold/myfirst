@@ -1,0 +1,29 @@
+.fl{
+    float: left;
+}
+.fr{
+    float:right;
+}
+
+.clearfix :after,
+.clearfix :before{
+    content: " ";
+    clear: both;
+    display: table;
+}
+
+.navbar{
+    clear: both;
+    height: 30px;
+}
+.item{
+    display: inline-block;
+    line-height: 2;
+}
+.navbar{
+    background: rgba(0,0,0,0.1);
+}
+.container{
+    width: 700px;
+    margin: 0 auto;
+}

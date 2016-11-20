@@ -21,7 +21,7 @@ class Answer extends Model
         if(!$question)
             return ['status'=>0,'msg'=>'question not exists'];
 
-        //ÖØ¸´»Ø´ð
+        //ï¿½Ø¸ï¿½ï¿½Ø´ï¿½
         $answerCount = $this->where(['question_id'=>rq('question_id'),'user_id'=>session('user_id')])->count();
         if($answerCount)
             return ['status'=>0,'msg'=>'duplicated answer'];
@@ -86,18 +86,20 @@ class Answer extends Model
         {
             return ['status'=>0,'msg'=>'need login'];
         }
+        $vote = rq('vote')<=1?1:2;
         DB::connection()->enableQueryLog();
         $answer = $this->find(rq("id"));
         if(!$answer)
             return ['status'=>0,'msg'=>'answer not exists'];
-        $vote = $answer->users()->where(['user_id'=>session('user_id')])->first();
+        $answerUser = $answer->users()->where(['user_id'=>session('user_id')])->first();
 
-       if($vote)
+       if($answerUser)
        {
-           $vote->pivot->delete();
+           $answerUser->pivot->delete();
        }
-        $answer->users()->attach(session('user_id'));
-        
+        $answer->users()->attach(session('user_id'),['vote' => $vote]);
+
+        return ['status'=>0 ] ;
         //dd(DB::getQueryLog());
 
        // $user =  $answer->users();

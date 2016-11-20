@@ -60,7 +60,7 @@ Route::group(['middleware' => ['web']],function(){
     });
 
 
-    Route::any('api/question/create',function(){
+    Route::any('api/question/add',function(){
         return question_ins()->add();
     });
 
@@ -106,6 +106,9 @@ Route::group(['middleware' => ['web']],function(){
     Route::any('api/comment/remove',function(){
         return comment_ins()->remove();
     });
+
+
+    Route::any('api/timeline','CommonController@timeline');
 
 });
 

@@ -207,6 +207,10 @@ ps：Eloquent确实有意思！
 使用 DB::getQueryLog()前记得要先执行：
 DB::connection()->enableQueryLog();
 
+##collection对象##
+合并两种不同类型的collection对象时，如果两个collection对象里有相同id的成员，后一个将会覆盖前面的元素，
+为了避免这种情况，可以将collection对象先转为array toArray().
+然后使用array_merge()方法合并。如果需要排序 使用 array_multisort；
 
 
 

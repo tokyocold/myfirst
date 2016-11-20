@@ -12,6 +12,7 @@ class CommonController extends Controller
     public function timeline()
     {
         $limit = 15;
+
         $skip = ((rq('page')?:1)-1)*$limit;
 
         $questions = question_ins()->limit($limit)->skip($skip)->get()->toArray();
@@ -25,5 +26,6 @@ class CommonController extends Controller
         array_multisort($tmp,SORT_ASC,$data);
 
         dd($data);
+
     }
 }

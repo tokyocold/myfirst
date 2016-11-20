@@ -34,9 +34,24 @@ function answer_ins()
 {
     return new \App\Answer();
 }
+
+function err($msg = null)
+{
+    return ['status'=>0,'msg'=>$msg];
+}
+
+function suc($data = array())
+{
+    if($data)
+    {
+        return ['status'=>1,'data'=>$data];
+    }
+    return ['status'=>1];
+}
+
 Route::group(['middleware' => ['web']],function(){
     Route::get('/', function () {
-        return view('welcome');
+        return view('index');
     });
 
     Route::any('/api',function(){
@@ -57,6 +72,14 @@ Route::group(['middleware' => ['web']],function(){
     Route::any('api/logout',function(){
         $user = new \App\User();
         return $user->logout();
+    });
+
+    Route::any("api/user/changePassword",function(){
+        return user_ins()->changePassword();
+    });
+
+    Route::any("api/user/read",function(){
+        return user_ins()->read();
     });
 
 
@@ -106,6 +129,8 @@ Route::group(['middleware' => ['web']],function(){
     Route::any('api/comment/remove',function(){
         return comment_ins()->remove();
     });
+
+
 
 
     Route::any('api/timeline','CommonController@timeline');

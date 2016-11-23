@@ -26,6 +26,7 @@ class Question extends Model
     }
 
 
+
     public function read()
     {
         if(rq('id'))
@@ -49,6 +50,7 @@ class Question extends Model
         {
             return ['status'=>0,'msg'=>'id required'];
         }
+
         $question = $this->find(rq('id'));
         if(!$question)
         {

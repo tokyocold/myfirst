@@ -355,6 +355,10 @@ ps：Eloquent确实有意思！
 使用 DB::getQueryLog()前记得要先执行：
 DB::connection()->enableQueryLog();
 
+##collection对象##
+合并两种不同类型的collection对象时，如果两个collection对象里有相同id的成员，后一个将会覆盖前面的元素，
+为了避免这种情况，可以将collection对象先转为array toArray().
+然后使用array_merge()方法合并。如果需要排序 使用 array_multisort；
 
 
 
@@ -409,7 +413,9 @@ StartSession这个中间件并没有注册在全局中而是在中间价组中�
 ##中间件##
 可以理解为 一个http请求 到达目的动作之前的层，没一层都可以检查请求并且完全拒绝它。
 
-
+##pdoexception##
+could not find driver  
+原因 没有安装php5-mysql扩展
 
 #Cookie以及Session#
 session的存在是依赖于cookie的，session是通过cookie传递的PHPSESSID来获取服务器的session。因此，无论单独存储cookie或者phpsession都是非常危险的做法。

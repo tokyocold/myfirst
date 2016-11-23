@@ -174,6 +174,7 @@ rowspan不会跨越thead/tbody/tfoot作用, 所以要分开写
         </tbody>
     </table>
 
+
 #laravel#
 ##php artisan##
 laravel下 的一个重要的特色就是使用php artisan命令来完成很多工作，
@@ -430,6 +431,16 @@ NS\ClassName
 class .class + Tab 快速生成
 id    #id + tab
 
+#xunsearch#
+##搜索建议没有结果，以及getExpandedQuery没有结果的问题##
+经过排查，问题出在没有强制刷新日志：
+util/Indexer.php --flush-log demo
+没有经过这一步的话，db/demo文件夹下不会有logdb目录。
+
+## 关于分词
+自定义分词，我希望把 支付宝 作为一个词语，而不是分为 “支付” “宝” 这种，除了要在dict_user中加入 支付宝 ，还要在搜索是指定：
+$searchObj->setScwsMulti(0)->setQuery($key)->search();
+即可。 CNM；
 
 
 

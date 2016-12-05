@@ -639,8 +639,26 @@ rsync -avzP --password-file=./rsync.pwd go-week/ www@172.16.0.151::www
 ##注意##
 服务端客户端的文件权限必须都为600才行
 
+##实时同步##
+使用inotify+rsync的方式可以做到实时同步。
 
 
+# docker#
+##镜像## 
+镜像是容器的基础，每个容器运行是都要指定其基础镜像。
+##容器##
+镜像（image）和容器（container）的关系就像面向对象中的 类 和实例一样。容器运行是，在以镜像为基础层，在上面增加了一个读写的存储层。
+命令：
+-  运行：docker run -itd -name myContainer ubuntu:14.04 /bin/echo 'hello world' 
+-d 守护状态运行  -t 分配一个伪终端
+-  查看: docker ps -a -q
+-q 只显示ID
+-  进入：docker attach ID
+- 删除: docker rm 
+删除所有：docker rm $(docker ps -a -q)
+- 启动/结束/重启   docker start|stop|restart
+
+##数据卷##
 
 
 

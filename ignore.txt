@@ -684,7 +684,69 @@ rsync -avzP --password-file=./rsync.pwd go-week/ www@172.16.0.151::www
 
 ##数据卷##
 
+Q：重启后居然配置还在！！
+A：当然在啊，只是设置后的配置不会保存到镜像（images)中。
 
+##link 容器互联##
+不需要固定的IP也可以实现基础的集群。核心就是 --link 指定好镜像和别名后，主从同步这块，从库设置的host为 别名，而非IP。同样，web服务器容器创建时也指定好--link与数据库容器做链接。连接时host设置为别名即可。
+Q：虽然说使用别名可以解决重启容器IP变更的问题，BUT,如果要向一个容器添加新的link该如何是好？
+
+
+
+
+
+
+
+#mysql#
+##权限##
+GRANT [ALL|priv_type] on [tbl_name | * | *.* | db_name.*] To user IDENTIFIED BY [PASSWORD] 
+IDENTIFIED BY后面的密码不需要使用PASSWORD函数加密。
+
+##主从同步##
+大体流程：
+1. 主库开启bin_log，设置ＩＤ号，ｍｙ.cnf:
+# 日志文件名  
+log-bin = mysql-bin  
+  
+# 主数据库端ID号  
+server-id = 1 
+2. 重启，主库创建用于从库同步的账户：
+mysql>grant replication slave on *.* to 'slave'@'%' identified by '123456';  
+MySQL> flush privileges;
+show master status;  
+
+3. 从库添加ID：
+server-id = 2
+
+4. 从库设置设置主库信息：
+mysql>change master to master_host='192.168.1.2',master_user='slave_account',master_password='123456',master_log_file='mysql-bin.000009',master_log_pos=196;  
+mysql>start slave;  
+mysql> show slave status\G; 
+stop slave#停止同步。
+
+
+添加完成后即可开始主从同步。主库的任何修改都会同步到从库。
+其他配置：
+主库：
+binlog-do-db = test  #只同步test库
+binlog-ignore-db = mysql    #忽略mysql库
+
+
+错误处理：
+stop slave; 
+set global sql_slave_skip_counter=1; （1是指跳过一个错误）
+slave start;
+
+
+##binlog##
+查看日志：	
+show variables like "log%";
+查看bin log:
+mysqlbinlog mysql-bin.000001 
+默认bin log中对行的操作都经过base64加密了，查看：
+mysqlbinlog -v -v --base64-output=DECODE-ROWS mysql-bin.000001即可。
+
+binlog在mysql重启后，或者log容量达到上限，后面的索引会递增。
 
 
 

@@ -1,0 +1,25 @@
+#响应式导航条#
+
+#col-*-* 响应式布局#
+指定在不同尺寸（各种设备）下的显示方式，例如
+<div class="row">
+<div class="col-xs-6">
+</div>
+<div class="col-xs-6">
+</div>
+</div>
+则 无论在什么设备下 都是各站一半。
+<div class="col-md-6">
+</div>
+<div class="col-md-6">
+</div>
+在md以上各站一半，小于md则折叠。
+
+
+#自适应#
+使用float:left  margin-left:* 可以实现自适应。
+<div float:left width:50px></div>
+<div margin-left:60px></div>
+
+
+

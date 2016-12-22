@@ -748,5 +748,35 @@ mysqlbinlog -v -v --base64-output=DECODE-ROWS mysql-bin.000001即可。
 
 binlog在mysql重启后，或者log容量达到上限，后面的索引会递增。
 
+##双主热备##
+
+
+#高可用#
+##mysql##
+一般都是基于主从同步方案：
+1. keepalived
+2. MHA
+
+一般使用主主同步，替换主从同步：
+1.主从同步的话，主数据库出现问题要切换到从数据库，这时候从数据库新加入的数据无法（很难）再同步回主库‘
+2. 主主同步主要的问题是，可能会出现主键冲突。可以通过设置两台数据库的：
+auto_increment_increment=2
+auto_increment_offset=1 
+来保证主键错开。
+
+
+
+##web##
+##nginx##
+
+
+
+##redis##
+
+
+
+
+
+
 
 

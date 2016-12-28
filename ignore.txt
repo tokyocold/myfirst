@@ -693,6 +693,42 @@ Q：虽然说使用别名可以解决重启容器IP变更的问题，BUT,如果�
 
 
 
+#Docker#
+
+##流程##
+新建容器必须要基于一个镜像，例如我们需要一个apache+php的运行环境，就需要有一个apche+php的镜像。可以使用Docker Hub里的镜像，也可以自己编写Dockefile，定制自己的镜像。
+###定制镜像###
+FROM ubuntu
+COPY sources.list /etc/apt/
+RUN apt-get update && apt-get install -y apache2 libapache2-mod-php7.0\
+   && rm -rf /var/lib/apt/lists/* 
+CMD ["apache2ctl", "-D", "FOREGROUND"]
+1. 定制镜像，则需要有一个镜像作为基础。因此指定FROM ubuntu指令。
+2. 因为ubuntu默认的源速度很慢，因此我们使用了本地的一个sources.list文件作为源文件，使用COPY命令。 
+3. 开始执行安装apache php 同时删除包的命令。
+4. 指定命令：前台执行apache。
+5. 编写完成后，开始生成镜像。
+	docker build -t myapache:v1 .
+
+6. 开始从镜像创建容器：
+	docker run -d -p 80:80  -v PATH:/var/www/html myapache:v1  ## -d 以守护进场模式运行  -p 绑定container端口到宿主机端口 -v 挂载本地PATH到容器的/var/www/html下。
+
+*注意*
+1. 生成镜像时，我们会传入一个参数“.”， 这个参数指明的是dockerfile的上下文地址。执行docker build后会把上下文目录下的文件都发送给服务端。  在dockerfile中 有COPY指令，这里则可以使用上下文目录下的 sources.list文件。
+2. 镜像默认的执行程序都是 /bin/bash。这也是docker区别于虚拟机的地方，容器对宿主机来说执行的程序始终都是 PID为1的程序，即默认程序。如果不替换默认程序，在docker容器中指定：service apache2 start 或者 apache2ctl start，则是使apache在后台执行。对于宿主机来说，容器的程序依然是/bin/bash，因此要将默认程序修改为apche,同时要指定其运行环境为前段而非后台。
+3. sources.list的目录为 /etc/apt/... ，apt-get update的作用是从软件源里拉取所有的软件信息列表，如果不做这一步是获取不到软件的。
+4. 这个技术碉堡了！
+
+
+
+
+
+
+
+
+
+
+
 
 
 

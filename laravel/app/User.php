@@ -142,10 +142,16 @@ class User extends Model
             return err('user not exists');
 
         $data = array(
-            'usernane' => $user->username,
+            'id' => $user->id,
+            'username' => $user->username,
             'intro' => $user->intro,
             'avatar_url' => $user->avatar_url
         );
-        return $data;
+        return suc(['data'=>$data]);
+    }
+
+    public function exists()
+    {
+        return suc(array('count'=>$this->where(rq())->count()));
     }
 }

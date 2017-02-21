@@ -70,14 +70,14 @@ class Comment extends Model
             {
                 return ['status'=>0,'msg'=>'question not exists'];
             }
-            $data = $this->where('question_id',rq('question_id'))->get()->keyby('id');
+            $data = $this->with('user')->where('question_id',rq('question_id'))->get()->keyby('id');
         }else{
             $answer = answer_ins()->find(rq('answer_id'));
             if(!$answer)
             {
                 return ['status'=>0,'msg'=>'answer not exists'];
             }
-            $data = $this->where('answer_id',rq('answer_id'))->get()->keyby('id');
+            $data = $this->with('user')->where('answer_id',rq('answer_id'))->get()->keyby('id');
         }
         return ['status'=>1,'data'=>$data];
     }
@@ -104,5 +104,15 @@ class Comment extends Model
             return ['status'=>0,'msg'=>'promission denied'];
         }
         return $comment->delete()?['status'=>1]:['status'=>0,'msg'=>'delete failed'];
+    }
+
+    public function user()
+    {
+        return $this->belongsTo('\App\User')->select(['username','id','intro']);
+    }
+
+    public function comments()
+    {
+        return $this->hasMany('\App\Comments');
     }
 }

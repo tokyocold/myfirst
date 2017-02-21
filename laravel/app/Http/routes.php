@@ -49,9 +49,25 @@ function suc($data = array())
     return ['status'=>1];
 }
 
+function is_logged_in()
+{
+    if(session()->get('user_id'))
+    {
+        return user_ins()->where('id',session()->get('user_id'))->first(['id','username','intro','avatar_url']);
+    }
+    return false;
+}
+
 Route::group(['middleware' => ['web']],function(){
     Route::get('/', function () {
         return view('index');
+    });
+
+    Route::any('/api/is_logged_in',function(){
+        if(is_logged_in())
+            return suc(['data'=>is_logged_in()]);
+        else
+            return err();
     });
 
     Route::any('/api',function(){
@@ -81,6 +97,10 @@ Route::group(['middleware' => ['web']],function(){
     Route::any("api/user/read",function(){
         return user_ins()->read();
     });
+    Route::any("api/user/exists",function(){
+        return user_ins()->exists();
+    });
+
 
 
     Route::any('api/question/add',function(){
@@ -135,6 +155,34 @@ Route::group(['middleware' => ['web']],function(){
 
     Route::any('api/timeline','CommonController@timeline');
 
+    //angularjs template
+    Route::get('/tpl/page/home',function (){
+       return view('page/home');
+    });
+    Route::get('/tpl/page/question_add',function (){
+        return view('page/question_add');
+    });
+    Route::get('/tpl/page/question_detail',function (){
+        return view('page/question_detail');
+    });
+    Route::get('/tpl/page/login',function (){
+        return view('page/login');
+    });
+    Route::get('/tpl/page/signup',function (){
+        return view('page/signup');
+    });
+    Route::get('/tpl/page/user',function (){
+        return view('page/user');
+    });
+    Route::get('/tpl/page/user-question',function (){
+        return view('page/user-question');
+    });
+    Route::get('/tpl/page/user-answer',function (){
+        return view('page/user-answer');
+    });
+    Route::get('/tpl/page/comment',function (){
+        return view('page/comment');
+    });
 });
 
 /*

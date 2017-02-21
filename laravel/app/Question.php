@@ -3,7 +3,7 @@
 namespace App;
 
 use Illuminate\Database\Eloquent\Model;
-
+use DB;
 class Question extends Model
 {
     //
@@ -25,13 +25,41 @@ class Question extends Model
         return $this->save()?['status'=>1,'id'=>$this->id]:['status'=>0,'msg'=>'insert failed'];
     }
 
+    public function edit()
+    {
+        if(!rq("id"))
+        {
+            return err('need id');
+        }
+        $question = $this->find(rq("id"));
+        if(!$question)
+            return err('question not exists');
+        if(!rq('title'))
+        {
+            return ['status'=>0,'msg'=>'title required'];
+        }
 
+        $question->title = rq("title");
+        $question->desc = rq("desc");
+        return $question->save()?suc():err('insert failed');
+    }
 
     public function read()
     {
         if(rq('id'))
         {
-            return ['status'=>1,'data'=>$this->find(rq('id'))];
+            return ['status'=>1,'data'=>$this->with('answers','answers.user','answers.users','comments','answers.comments')->find(rq('id'))];
+        }
+
+        if(rq('user_id'))
+        {
+            $user = user_ins()->find(rq('user_id'));
+            if(!$user)
+            {
+                return err('user not exists');
+            }
+            $r = $this->with('answers')->where('user_id',rq('user_id'))->get()->keyBy('id');
+            return suc($r->toArray());
         }
 
         $limit = 15;
@@ -62,5 +90,20 @@ class Question extends Model
         }
         return  $question->delete()?['status'=>1]:['status'=>0,'msg'=>'delete failed'];
 
+    }
+
+    public function answers()
+    {
+        return $this->hasMany('\App\Answer');
+    }
+
+    public function user()
+    {
+        return $this->belongsTo('\App\User')->select(array('id','username'));
+    }
+
+    public function comments()
+    {
+        return $this->hasMany('\App\Comment');
     }
 }

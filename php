@@ -317,11 +317,36 @@ if($classback instanceof Closure)
 
 
 
+## 错误处理 ##
+关于自定义错误处理函数：
+set_error_handler();
+这个函数只能作用于E_USER_ERROR | E_USER_WARNING | E_USER_NOTICE，即用户自定义的错误。PHP核心错误是无法生效的。
+如果需要捕获php核心层面的错误，需要使用：
+register_shutdown_function("errorHandler");
+function errorHandler()
+{
+    $arrStrErrorInfo = error_get_last();//获取系统错误
+     print_r( $arrStrErrorInfo );//处理错误
+}
+使用register_shutdown_function来处理。
+
+关于xdebug的trace无法使用的问题？？？
+单步
+
+使用PHPSTORM和XDEBUG调试，只要配置好php.ini，phpStorm里Php,xdebug设置正确即可。
+浏览器访问时记得加上 XDEBUG_SESSION_START参数！！！切记切记
 
 
 
 
+## 关于电商抢购出现超库存问题##
+两种思路：
+1 使用前端内存，在执行数据库前提前操作内存库存减1
 
+2 消息队列： 
+简单说，就是将用户请求放入缓存中，例如把请求用户的id放入缓存队列中，后台增加一个守护进程，pop队列一个个处理，同时客户端增加一个定时的ajax请求轮询访问返回结果。
+
+可以看到  使用队列需要增加一个守护脚本，客户端定时请求。所以个人倾向于使用前段内存。
 
 
 
@@ -349,6 +374,24 @@ ps：Eloquent确实有意思！
 如果要操作中间表（admin_group)则可以使用   $admin->groups()->first()->pivot->delete()   pivot属性
 来获取中间表对象。
 
+
+## 三张表以上的对应关系建立：
+在实现问题详情是遇到的问题： 如果快速的获取一个问题下的所有回答，以及回答相关的用户。
+三张表： question     question hasmany answers
+        answer      answer belongsTo user and answer belongstoMany users 
+         user
+上面是三张表以及对应关系。目的是直接获取到question集合包含answers 以及每一个answer对应的user和users。
+两种方式：
+    -  分布获取  先获取question question->find(id)  再获取回答  answers->with('user','users')->where(['question_id'=>id])
+    -  直接获取   当三张表的对应关系已经建立好以后，其实可以很方便的一步获取到结果：
+                question->with('answers','answers.user','answers.users')->find(id)
+                  这样获取到的结果以及包含了所有需要的集合。
+
+
+
+
+
+
 ##debug Sql##
 如果要查看 Orm对象实际上执行的SQL 可以使用 $user->where()->toSql();
 或者 DB::getQueryLog()；
@@ -360,9 +403,30 @@ DB::connection()->enableQueryLog();
 为了避免这种情况，可以将collection对象先转为array toArray().
 然后使用array_merge()方法合并。如果需要排序 使用 array_multisort；
 
+##pivot (中间表对象）##
+默认情况下只有模型键(XX_ID)才能用在pivot上,如果要使用其他属性，必须在定义关联关系时进行指定：
+        return $this->belongsToMany('\App\Admin')   //基础的多对多关系
+            ->withPivot('vote')                     //增加中间表vote
+            ->withTimestamps()                      //增加中间表时间戳
+
+
+##关系表字段返回
+建立对应关系后（belongsTo/belongsToMany），查询时使用with，默认会返回关系表内的所有字段，例如question_ins()::with('user')会返回user的所有字段。可以使用->select来限定字段。
+return $this->belongsTo('\App\User')->select(array('id','usernname'));
+
+## 关系表的关系表返回
+$this->with('answers','answers.user','answers.users','comments')
 
 
 ##attach/detach##
+更新多对多中间表中的数据记录。
+
+
+
+## keyby只能作用在colection上面，因此必须使用$Model->get()而不能使用DB::(table)
+$collections->pluck("field")可以返回合集的指定字段组成的数组。
+
+
 
 
 ##php自带的服务器##
@@ -449,6 +513,445 @@ $searchObj->setScwsMulti(0)->setQuery($key)->search();
 即可。 CNM；
 
 
+
+# thinkphp
+
+## composer显示指定包信息：composer show -a laravel/laravel
+
+## 配置
+### 状态配置：
+入口文件指定 define('APP_STATUS','office');
+对应的配置文件：Application/Common/Conf/office.php
+
+入口文件：define('APP_STATUS','home');
+对应的配置文件：Application/Common/Conf/home.php
+
+### 读取配置：
+C("URL_MODEL");
+二维配置：
+C('USER_CONFIG.USER_TYPE');
+
+### 动态设置：
+C("DATA_CACHE_TIME",60);
+
+### 扩展配置
+'LOAD_EXT_CONFIG'=>'user,db'
+位置：Application/Common/Conf/user.php  Application/Common/Conf/db.php
+
+
+## 架构
+### 模块化
+- 自动生成模块 控制器 模型 
+\Think\Build::buildController("Admin","User);
+\Think\Build::buildModel("Admin","User);
+- 禁止访问
+ 'MODULE_DENY_LIST'      =>  array('Common','Runtime','Api'),
+- 允许访问
+'MODULE_ALLOW_LIST'    =>    array('Home','Admin','User'),
+'DEFAULT_MODULE'       =>    'Home',
+
+- 多入口设计：
+
+### URL
+http://serverName/index.php/模块/控制器/操作
+- 大小写
+'URL_CASE_INSENSITIVE'  =>  true,    不区分大小写
+- 普通模式
+- pathInfo模式
+http://localhost/index.php/home/user/login/var/value/
+path模式下依然可以使用普通模式：
+http://localhost/index.php/home/user/login?var=value
+- rewrite模式
+
+### 多层MVC 
+- Model层
+默认的模型是Model类构成，随着项目增大可以采用多层Model，在模块下创建
+Model Logic Service这些目录。把对用户表操作分成三层。
+
+UserModel UserLogic UserService 统一继承Model类即可。
+D('User','Logic')   实例化UserLogic
+D('User','Service') 实例化UserService
+
+- View层 
+默认视图层设置： 默认view
+'DEFAULT_V_LAYER'       =>  'Mobile',
+
+- Controller层
+
+### CBD模式
+#### behavior
+- 标签位 
+ 例如 app_init app_begin app_end等
+自定义标签：
+tag('my_tag'); // 添加my_tag 标签侦听
+// 下面的写法作用一致
+\Think\Hook::listen('my_tag');
+
+- 行为定义
+行为类必须定义执行入口方法run
+
+- 行为绑定
+建立tags.php，内容：
+return array(
+     '标签名称1'=>array('行为名1','行为名2',...), 
+     '标签名称2'=>array('行为名1','行为名2',...), 
+ );
+
+- 单独执行
+B方法
+B('Home\Behavior\AuthCheck')
+
+
+##  路由
+### 路由定义
+- 开启
+'URL_ROUTER_ON'   => true, 
+- 规则 
+定义在模块目录（Admin)下conf内：
+'URL_ROUTE_RULES' => array(
+    'page/:id'=>'Index/read?id=:1'  //找Admin模块下控制器/操作/参数
+)
+全局路由（Common)下：
+'URL_ROUTE_RULES' => array(
+    'page/:id\d'=>'Admin/Index/read'  //要指明模块名 参数限制数字
+)
+
+可以传入额外参数：
+'blog/:id'=>'blog/read?status=1&app_id=5',
+
+- 路由参数：
+'page/:id'=>array('Admin/Index/read','id=:1',array('ext'=>'html')),  //限制后缀为html
+array('method'=>'get')  //限制只有GET请求
+array('callback'=>'checkfun'), 自定义checkFun函数检测，返回false表示不生效
+
+### 规则路由
+参数中以“：”开头的表示动态参数，对应一个GET参数，
+'page/:id'=>'Admin/Index/read'
+中$_GET['id']获取:id.
+
+### 闭包支持
+'pic/:id'=>function($id){
+    echo '哈哈哈 这是闭包'.$id;
+    $_SERVER['PATH_INFO'] = 'Index/read'; //继续执行，默认执行完闭包后不会继续
+    return true;
+}
+
+
+
+##控制器
+### 定义
+- 后缀 
+'ACTION_SUFFIX'         =>  'Action'
+public function listAction(){}
+后缀只影响类的定义不影响Url
+
+- 控制器实例化
+$user = new \Home\Controller\UserController;
+or
+$user = A("User");
+
+### 前置后置操作
+_before_funcname()
+_after_funcname()
+
+### 参数绑定
+默认开启  'URL_PARAMS_BIND'       =>  true
+按照变量顺序绑定 'URL_PARAMS_BIND_TYPE'  =>  1, 
+
+### 伪静态
+'URL_HTML_SUFFIX' => 'html|shtml|xml' 
+？ pathinfo问题
+
+### URL生成
+U()方法
+U('Index/say',array('id'=>1),'','localhost:8000');
+
+### ajax返回
+$this->ajaxReturn($data,['jsonp']);
+
+### 跳转&重定向
+- 跳转
+$this->success('成功','/Admin/Index/index',5);
+$this->error('error','/Admin/Index/index',5);
+模板
+TMPL_ACTION_ERROR
+TMPL_ACTION_SUCCESS
+使用项目内部模板文件：
+'TMPL_ACTION_SUCCESS' => 'Public:success' 
+内部view须有public/success.html
+
+-重定向
+$this->redirect()
+redirect()
+
+### 输入变量
+I()方法
+I('变量类型.变量名/修饰符',['默认值'],['过滤方法'],['额外数据源'])
+- 变量过滤
+'DEFAULT_FILTER'        => 'htmlspecialchars'
+I('get.name') == htmlspecialchars($_GET['name'])
+第三个参数
+I('post.email','',FILTER_VALIDATE_EMAIL);
+调用php 内置的filter_val（）
+
+- 变量修饰符
+I('get.id/d');
+修饰符有： s d b a f
+
+### 请求类型
+内置常量：
+IS_GET IS_POST IS_AJAX
+
+### 空操作
+找不到请求方法会定位到  
+_empty()
+
+### 空控制器
+找不到制定控制器会定位到
+EmptyController
+
+### 插件控制器
+VAR_ADDON => 'addon' 
+
+
+## 模型
+### 定义
+约定对应关系：
+- UserModel -> think_user
+- UserTypeModle -> think_user_type
+
+tp中，关于数据表名称的属性：
+- tablePrefix：前缀，未定义获取配置中的DB_PREFIX
+- tableName :不包含前缀的表名
+- trueTableName: 包含前缀的表明
+- dbName : 当前模型对应的数据库和配置文件不一致时定义
+
+模型必须有对应的数据表。
+### 实例化
+- 直接实例化：
+$New  = new \Home\Model\NewModel('blog','think_',$connection);
+$connection 数据库连接信息：
+    - 字符串定义
+    - 数组定义
+    - 配置定义：
+    默认配置参数：
+    'DB_TYPE'      =>  '',     // 数据库类型
+    'DB_HOST'      =>  '',     // 服务器地址
+    'DB_NAME'      =>  '',     // 数据库名
+    ...
+
+- D方法实例化
+类不存在，则实例化公共模块下类，若不存在，则实例化\Think\Model基类
+
+- M方法实例化
+D是实例化具体的模型类，如果仅仅是对表做CURD操作，则使用M实例化
+M实例化不能调用模型类的具体方法。 只能做数据操作
+
+- 实例化空模型类
+$Model = M();
+仅仅是用原生SQL查询可使用空模型类
+
+###字段定义
+缓存位置：Runtime/Data/_fields/
+DB_FIELDS_CACHE => false可以关闭字段自动缓存，debug模式下默认为关闭
+部署模式下修改了表结构需要清空缓存
+
+### 连接数据库
+- 配置文件定意思
+- 模型类定义
+如果模型内定义了connection属性，则实例化时会使用定义的信息。
+
+### 切换数据库
+Model->db("数据库编号","数据库配置");
+
+### 分布式数据库支持
+'DB_DEPLOY_TYPE'=> 1, //分布式支持
+'DB_RW_SEPARATE'=>true, //读写分离
+
+### 连贯操作
+除了select方法放到最后（select并不是连贯操作方法），其他的连贯方法没有先后顺序。
+
+### 命名范围
+类定义_scope属性，使用scope连贯操作方法调用。
+
+
+### CURD操作
+#### 数据创建
+$User = M('User');
+$User->create(); //根据表单提交$_POST数据自动创建对象
+
+create的第二个参数可以制定操作状态。指定后，就可以执行令牌验证，自动验证，自动完成等功能。
+没有调用add,save方法之前数据都在内存可以改变对象。
+Data()简单创建一个数据对象不进行其他操作。
+$User->data();
+add(),save()操作时会自动过滤不存在的字段以及非法数据类型的数据，因此不用担心非法数据导致的SQL错误问题
+
+#### 数据写入
+add()方法写入，replace参数true表示覆盖，false为默认
+如果已经使用create,data创建了对象，则add就不需要传入数据了。。
+不执行SQL而是返回：
+$User->fetchSql(true)->add($data);
+
+#### 数据读取
+- 读取一行数据 find()方法
+可以调用data()方法获取查询后的结果
+- 读取多行数据 select()方法
+- 获取某个列的数据 getField方法
+
+#### 数据更新
+save()方法：
+$user->where('id=1')->save($data);
+如果没有where且数据本身不包含主键字段，则save不会更新任何记录。
+
+setField 更新字段。
+setInc seDec 更新统计字段。
+
+延迟更新？？
+
+#### 数据删除
+delete()方法
+delete(5)删除主键为5的数据
+delete(1,2,5) //del主键 1,2,5数据
+没有传入任何条件则不会删除。除非
+$User->where('1')->delete();
+
+
+### 字段映射
+模型中定义_map属性，表单即可使用映射的字段作为表单名提交：
+  protected $_map = array(
+ 'name' =>'username', // 把表单中name映射到数据表的username字段
+ 'mail'  =>'email', // 把表单中的mail映射到数据表的email字段
+     );
+获取数据时并不会自动映射为新字段名，如果要使用自动处理：
+'READ_DATA_MAP'=>true
+
+
+### 查询语言
+- 查询方式：
+1 字符串作为查询条件：
+    $User->where('type=1 AND name="123"')->select();
+
+2 使用数组作为查询条件
+3 使用对象来查询：
+可以使用内置的stdClass()对象
+
+使用数组或对象查询时，传入不存在的对象会被自动过滤
+    
+- 表达式查询
+$data['字段'] = array('表达式','查询条件')
+$data['id'] = array('eq',100);
+$data['id'] = array('elt',100); //小于等于
+$data['id'] = array('notlike',100);
+'DB_LIKE_FIELDS'=>'title|content' 设置字段自动模糊查询
+$map['title'] = 'thinkphp'; //查询条件  title like '%thinkphp%'
+$map['id']  = array('between','1,8');
+$map['id']  = array('not in','1,5,8');
+EXP表达式：
+$data['score'] = array('exp','score+1');// 用户的积分加1
+$User->where('id=5')->save($data); // 根据条件保存修改的数据
+
+
+- 统计查询
+$User = M("User")
+$User->count()
+$User->max("score")
+$User->min("score")
+$User->avg("score")
+$Uesr->sum("Score')
+所有的统计查询均支持连贯操作的使用
+
+
+- SQL查询
+1 query方法，用于执行查询操作：
+$Model = new \Think\Model();//可以只实例化Model，没有对应任何表
+$Model->query(...);
+
+
+2 execute方法，执行写入操作的SQL
+
+- 动态查询
+getBy 如果表包含Id,name,email 则可以
+getByName getByEmail 查询
+
+getFieldBy 根据字段查询
+getFieldByName("lala","id")  根据name或者用户的Id
+
+- 子查询
+分两步：
+1 子查询不执行SQL，只是构建
+$subQuery = $model->where()->select(false);
+or
+$subQuery = $model->where()->buildSql();
+
+2 构建最后的SQL
+$model->table($subQuery.' a')->where()->order()->select() 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# collection
+## preg_replace_callback
+php7中替代了preg_replace('/。。。/e','function',str)
+的形式，e在7中被废弃
+
+其中第二个参数可以为一个匿名函数，当需要使用外部参数时可以使用 preg_replace_callback('//',function($matches)use($val){},str);
+注意，如果需要修改$val的值，则可以加上&符号。。
 
 
 

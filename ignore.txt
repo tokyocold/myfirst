@@ -682,6 +682,9 @@ rsync -avzP --password-file=./rsync.pwd go-week/ www@172.16.0.151::www
 删除所有：docker rm $(docker ps -a -q)
 - 启动/结束/重启   docker start|stop|restart
 
+进入容器：sudo docker exec -it 775c7c9ee1e1 /bin/bash 
+容器信息：docker container inspect ***
+
 ##数据卷##
 
 Q：重启后居然配置还在！！
@@ -722,7 +725,9 @@ CMD ["apache2ctl", "-D", "FOREGROUND"]
 
 
 
+16.04 does not have PHP 5 in the official repositories. Install a 14.04 system, or use this PPA.
 
+要想用docker安装php5  换个老点的ubuntu版本把
 
 
 
@@ -810,6 +815,9 @@ auto_increment_offset=1
 ##redis##
 
 
+## 127.0.0.1 0.0.0.0区别
+netstat 中可以看到可以看到各个服务绑定的host和端口， 127.0.0.1只允许本机访问，而0.0.0.0表示 “本机所有的IP” 包括各种局域网互联网IP。
+一般每个软件各自都有会绑定设置。  
 
 
 

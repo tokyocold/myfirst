@@ -1,0 +1,168 @@
+apache
+.htaccess
+把里边的AllowOverride None  改为  Allow Override All   这样.htaccess文件才能启用。
+
+deny from all无效问题  将根配置里的document中allow from all 改为deny 
+再单独配置虚拟主机即可。
+
+
+
+nginx
+配置pathInfo；
+只要把 default中
+	location ~ \.php$ {
+改为 
+	location ~ \.php {  即可
+
+
+
+
+
+
+
+
+
+mysql
+Field ‘xxxx’ doesn’t have a default value
+1. 为表里的字段添加默认值
+2. 设置：
+    [mysqld]
+    sql_mode = ""
+3. 忽略大小写
+    [mysqld]
+    lower_case_table_names=1    //1不敏感 0 敏感
+
+4. 全文索引
+    and  match(field) AGAINST()
+    布尔查找。这种查找方式的特点是没有自然查找模式中的50%规则，即便有词语在数据集中频繁出现的几率超过50%，也会被作为搜索目标进行检索并返回结果，而且检索时单词的局部匹配也会被作为目标进行检索
+    
+    无结果：
+    配置：
+    [mysqld]
+    innodb_ft_min_token_size=1
+    ft_min_word_len=1
+
+    执行
+    ALTER TABLE table_name ENGINE='innodb';
+
+查看二进制日志：
+mysqlbinlog –base64-output=DECODE-ROWS -v mysql-bin.000789
+
+外键：
+查看外键：select TABLE_NAME,COLUMN_NAME,CONSTRAINT_NAME, REFERENCED_TABLE_NAME,REFERENCED_COLUMN_NAME from INFORMATION_SCHEMA.KEY_COLUMN_USAGE where REFERENCED_TABLE_NAME = 'plat_company'
+
+
+报错：General error: 1205 Lock wait timeout exceeded; try restarting transaction
+通常是因为   一个修改的操作还没有commit 新的修改被阻塞了。通常在事务里面。
+
+
+
+
+
+
+git
+- git merge命令用于合并指定分支到当前分支
+因此，merge操作必须要checkout当前分之才可以操作
+
+- git revert reset区别
+revert 生成一条新的提交来撤销某次提交，之前的commit都会保留
+reset 回到某次提交，提交之前的保留，之后的回到暂存区  
+倾向于使用reset.
+
+- git branch -d XXX 删除分之
+  git branch -D XXX 强制删除
+
+- 查看指定文件的历史内容
+$ git show [commit]:[filename]
+
+
+
+
+
+
+thinkphp
+权限 角色
+调试 （SQL报错后调试SQL的方法）
+
+session 配置：
+'SESSION_AUTO_START'       =>  true,  //自动开始session_start()
+'SESSION_OPTIONS'          => array('path'=>APP_PATH.'Runtime/Session/'),配置session_save_path
+SHOW_PAGE_TRACE 不会显示AJAX 的调试信息，可以在AJAX 内使用trace方法，在日志中查看
+
+
+自动侦测浏览器语言中，使用了 $_SERVER['HTTP_ACCEPT_LANGUAGE']变量
+这个变量，是通过浏览器的accept language请求头解析的.
+
+
+
+
+ucenter
+分为服务端和客户端两部分。
+服务器需要搭建一次，客户端需要在每个需要联通的应用中搭建。
+搭建后，可以在任意应用注册登录，“同步”状态到其他应用中。
+原理：应用A登录后发送请求到服务端，获取所有部署完成的应用，生成对应的script(每个应用返回一个script),应用A接受到返回执行script请求其他应用。其他应用则可以根据不同的请求action做处理，
+例如登录，可以判断本地数据库是否有记录，没有则加入，有则登录等类似操作。
+
+
+
+
+curl
+调试curl     curl_setopt($ch,CURLOPT_VERBOSE	,true);
+结果将作为标准化输出 stdout 或者是 CURLOPT_STDERR 指定的文件
+
+curl_setopt($ch,CURLOPT_HTTPHEADER,$header);  不能调用多次，后面的调用会覆盖前面的，可以把所有要加的头信息放入一个数组中
+
+curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true); 目标页面如果进行了302跳转，可以设置该参数捕获结果。
+
+
+
+
+
+
+
+
+
+linux
+crossover(wine)不能用中文输入法问题：
+环境变量，执行脚本里添加：
+export XIM="fcitx"
+export XIM_PROGRAM="fcitx"
+export XMODIFIERS="@im=fcitx"
+export GTK_IM_MODULE="fcitx"
+export QT_IM_MODULE="fcitx"
+即可
+
+搜狗输入法不正常的问题：
+删除配置文件：
+～/.config/
+SogouPY、SogouPY.users、sogou-qimpanel
+重启试试。
+
+全局翻墙：
+设置环境变量：
+ export http_proxy="http://127.0.0.1:1080/"
+127.0.0.1:1080为本地ss的配置
+
+
+
+
+
+
+
+
+js
+jquery取消ajax请求
+var req = $.post(....);
+if(req)
+{
+    req.abort();
+}
+
+自动补全输入框插件  typeahead.js
+包括typeahead 和 bloodhound 
+内容不全bug  可使用 https://github.com/corejavascript/typeahead.js项目
+
+
+pwd THU&*789
+
+

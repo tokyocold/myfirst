@@ -822,5 +822,19 @@ netstat 中可以看到可以看到各个服务绑定的host和端口， 127.0.0
 
 
 
+## 正则表达式
+
+重复子组捕获只会保存最后一个（据说.net 和perl会保存每个子组，大部分语言做不到）
+eg:fasldfjlsadfjlajdflasdjfdasfjldadsfja
+reg: /(.)*/
+res: $match[1]=a;
+只会捕获到最后一个，因此这种情况下可以做两次preg_match来获取列表
+
+
+
+
+
+
+
 
 

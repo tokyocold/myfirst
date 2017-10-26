@@ -13,6 +13,45 @@ nginx
 	location ~ \.php$ {
 改为 
 	location ~ \.php {  即可
+确保有：
+set $path_info $fastcgi_path_info;
+fastcgi_param PATH_INFO $path_info;
+
+
+负载均衡中，在配置了域名解析到负载均衡机器后，一定要避免在后端再次出现直接访问公网域名的情况，否则会造成死循环：
+    www.a.com
+    1.1.1.1
+      |
+---------------
+|              |
+1.1.1.2       1.1.1.3
+
+如果请求www.a.com，请求被分发到后端时，后端又直接请求了www.a.com，则会再次请求www.a.com到负载均衡ip，然后再次分发给后端，这样则会造成死循环。
+解决：可以在后端的请求中指明ip:
+       curl -H"Host:www.a.com" 127.0.0.1/api.php
+或者  直接请求IP
+        127.0.0.1/api.php
+
+
+
+
+压力测试
+
+压测命令  ： ab -n1000 -c100 XXXX
+
+
+php-fpm 
+pm参数
+
+pm.max_children  决定了php-fpm会创建的最大子进程数目
+
+pm.start_servers
+pm.max_spare_servers
+pm.min_spare_servers
+这三个参数决定了php-fpm启动时创建的进程和空闲时进程。
+
+经过压测发现：
+如果在大量并发下，切脚本的执行时间并不快！  那么，如果max_children小于核心数或略大于核心数，则请求的处理相应时间会比较低，如果吧max_children值设置的较为高，比如100 200，则速度要更快，同时cpu占用率会比较高：究其原因，是因为多个进程在处理的时候，避免的重复的fork，以及进程等待IO的时间。 因此 感觉初始fork出大量进程是个不错的选择。
 
 
 
@@ -56,6 +95,42 @@ mysqlbinlog –base64-output=DECODE-ROWS -v mysql-bin.000789
 通常是因为   一个修改的操作还没有commit 新的修改被阻塞了。通常在事务里面。
 
 
+获取分组 group by 的最大数据：
+group by 无法获得 一个指定字段每组最大值的记录，可以使用：
+select * from (select * from plat_tax_registration where `zone_company_id` = 84698 order by `year_month` desc) as t where `zone_company_id` = 84698 GROUP BY company_id
+先排序，再group by 。
+
+!!!!!  nonono  上面的方法is a shit:
+mysql并没与在任何地方说明返回的结果一定是第一行，所以先排序再查询不一定正确，正确的方法是：
+使用group_concat() 【核心】 和 substring_index()结合，即可做到分组内排序
+
+核心语法：select substring_index(group_concat(fieldB order by *** desc),',',1) as fieldB from table group by fieldA
+真是so easys
+
+
+加密解密：
+msyql aes_encrypt aes_decrypt 
+注意：存储时使用varbinary类型
+
+获取分组内没有指定值的组：
+使用自连接方式。
+id    user_id    value
+----------------------------
+1     2          colour
+2     2          receive_email
+3     3          colour
+4     3          receive_email
+5     3          receive_info
+取value没有receive_info的user_id:
+SELECT  DISTINCT a.user_id
+FROM    tableName a
+        LEFT JOIN tableName b
+            ON  a.user_id = b.user_id AND
+                b.value = 'receive_info' //划重点  b.value
+WHERE   b.user_id IS NULL
+
+
+
 
 
 
@@ -76,6 +151,10 @@ reset 回到某次提交，提交之前的保留，之后的回到暂存区
 $ git show [commit]:[filename]
 
 
+查找修改内容：
+git log --follow -p filename
+然后使用/keyoword查找
+
 
 
 
@@ -93,7 +172,8 @@ SHOW_PAGE_TRACE 不会显示AJAX 的调试信息，可以在AJAX 内使用trace�
 自动侦测浏览器语言中，使用了 $_SERVER['HTTP_ACCEPT_LANGUAGE']变量
 这个变量，是通过浏览器的accept language请求头解析的.
 
-
+关于tp不记录日志的原因：
+配置：SHOW_PAGE_TRACE=>true时，不会记录日志，、
 
 
 ucenter
@@ -117,13 +197,20 @@ curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true); 目标页面如果进行了302�
 
 
 
+PHP
+array_merge() 二维数组，后一个会覆盖前一个的相同键值
+
+解决csv解析，包括乱码编码问题：ParseCsv项目；
+
+preg_replace 返回结果为NULL的问题：
+可以使用Preg_last_error()来捕获错误。
+目前发现的错误有：回溯次数大于系统限制，核心还是要写好正则表达式，减少回溯次数。
 
 
 
 
-
-linux
-crossover(wine)不能用中文输入法问题：
+#linux
+- crossover(wine)不能用中文输入法问题：
 环境变量，执行脚本里添加：
 export XIM="fcitx"
 export XIM_PROGRAM="fcitx"
@@ -132,17 +219,113 @@ export GTK_IM_MODULE="fcitx"
 export QT_IM_MODULE="fcitx"
 即可
 
-搜狗输入法不正常的问题：
+- 搜狗输入法不正常的问题：
 删除配置文件：
 ～/.config/
 SogouPY、SogouPY.users、sogou-qimpanel
 重启试试。
 
-全局翻墙：
+- 全局翻墙：
 设置环境变量：
  export http_proxy="http://127.0.0.1:1080/"
 127.0.0.1:1080为本地ss的配置
 
+
+- vmstat命令  系统状态
+vmstat 1 (隔一秒刷新) -S m(单位m)
+结果分为procs,memory,swap,io,system,cpu这几列：
+procs:
+r: 可运行进程数，包括正在运行(Running)和已就绪等待运行(Waiting)的。
+这个数值越大说明CPU负载越高，正常的范围应该是cpu核心数的2倍以内。
+b: 等待io的进程数量，高的话  可能 说明io遇到瓶颈了
+
+
+- memeory:
+内存使用情况
+
+- swap...
+io...
+system...
+
+- cpu:
+us：用户态执行百分比
+sy:内核态执行百分比
+id:cpu空闲百分比
+wa: IO等待时间百分比
+
+
+-us占用过高，长期占用50%以上，就可以考虑是否是程序层面的问题，着手优化。
+wa占用过高，说明IO等待比较严重，这可能由于磁盘大量作随机访问造成，也有可能磁盘出现瓶颈
+
+
+- 终端下查看IP：
+curl ip.gs
+
+
+- inotify  实时监控工具
+inotify可以实时监控 文件以及文件夹 的事件：例如 access read close等。  可以搭配rsync做到服务器间实时更新同步
+inotify包括：
+inotifywait 以及  inotifywatch两部分
+
+inotifywait:监控文件的触发事件：
+-r 递归监控目录，不加的话只会监控到指定的目录这个级别，目录下面的子目录内的事件不会监听
+-m monitor: 持续监控而不是监控一次后就结束
+-e event: 设定监控的事件（access read close open create delete等）
+-q quiet:安静模式，只输出一行不会输出详细信息。
+
+inotifywatch: 统计被监控文件的访问情况：
+
+
+- shell中的read命令
+read：获取标准输入或文件输入
+eg:
+cat /etc/passwd| while read line
+do
+echo $line
+done
+ps: 上面例子中 read后面的line是个变量
+
+
+- notify-send :发送桌面通知
+-u  level(low normal critical)：通知级别 
+-t time :过期时间，貌似没用 ，通知一直都在只能使用 -u critical了
+eg: notify-send "标题" "内容"
+
+
+
+- linux下 php （5.6） 链接 mssql(2012)
+1. 安装freetds
+wget ftp://ftp.freetds.org/pub/freetds/stable/freetds-patched.tar.gz
+解压
+ ./configure --prefix=/usr/local/freetds --with-tdsver=7.4 --enable-msdblib
+   make
+  make install
+
+2 配置 freetds
+# echo "/usr/local/freetds/lib/" > /etc/ld.so.conf.d/freetds.conf
+# ldconfig
+
+3 验证是否生效
+/usr/local/freetds/bin/tsql -H 数据库服务器IP  -p 端口号 -U 用户名 -P 密码
+
+4 添加PHP扩展 mssql 和 pdo_dblib
+mssql是直接调动mssql_connect()方法
+pdo_dblib 是使用     $dbh = new PDO ("dblib:host=$hostname:$port;dbname=$dbname","$username","$pw");  
+
+注意：ubuntu下 安装pdo_dblib可以使用
+apt-get install php5.6-sybase
+sudo apt-get install php5-odbc php5-sybase tdsodbc
+php5-sybase will give you dblib, tdsodbc will give you FreeTDS and php5-odbc will give you  ODBC. These will likely require other packages so just accept whatever apt suggests when you run the above command.
+
+
+
+PHP安装pdo_odbc 或者 pdo_dblib扩展：
+可以直接访问php的原始安装包： ext 文件夹。 ext下集成了php所有的核心模块 其中就包括pdo及其扩展驱动。
+进入目录  执行
+phpize
+.configure
+make && make install
+添加生成的so即可。
 
 
 
@@ -163,6 +346,26 @@ if(req)
 内容不全bug  可使用 https://github.com/corejavascript/typeahead.js项目
 
 
+jquery ajaxComplete()方法
+$(document).ajaxComplete();
+可以在ajax执行完成后运行。无论成功失败。
+关键是：不需要在ajax()中注册，任何地方注册都可以。
+
+
 pwd THU&*789
 
+
+网络
+
+实现反向NAT的模式：
+1. 动态域名：就是把服务商的一个固定的域名分配到一个动态的外网IP上，路由再做端口映射（port forwarding) 解析到内网的指定机器上。  
+注： 路由重启后，电信方会分配一个新的IP，因此需要定时通知服务商来更新域名绑定的IP。 一般可以使用lynx或者curl命令，或者使用服务商提供的客户端。
+
+2. 内网穿透： 不需要知道外网的IP，不需要对路由器进行任何设置。即可将一个域名绑定到内网的一台机器上。 原理是，通过内网安装一个客户端，来建立和服务端的通信，所有对域名的请求由服务端下发到客户端上，实现穿透。
+
+ea6500 无法端口映射的问题：
+经过排查，发现是由于 cut through forwarding （直通转发技术）开启所导致的。
+ctf是一种NAT加速的技术，但可能会导致一些问题，例如 和 端口映射不兼容
+https://routerguide.net/nat-acceleration-on-or-off/
+因此 关闭CTF后，即可正常实现端口映射
 

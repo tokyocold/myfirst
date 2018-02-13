@@ -130,8 +130,8 @@ FROM    tableName a
 WHERE   b.user_id IS NULL
 
 
-
-
+mysql cli连不上  程序正常的原因：
+mysql 编译的时候指定的端口不是3306，要手动指定下。。。。。
 
 
 
@@ -368,4 +368,7 @@ ea6500 无法端口映射的问题：
 ctf是一种NAT加速的技术，但可能会导致一些问题，例如 和 端口映射不兼容
 https://routerguide.net/nat-acceleration-on-or-off/
 因此 关闭CTF后，即可正常实现端口映射
+
+目前使用了 共云 的动态域名服务。
+
 

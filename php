@@ -887,6 +887,14 @@ $subQuery = $model->where()->buildSql();
 $model->table($subQuery.' a')->where()->order()->select() 
 
 
+## 关于 TP项目不报错的原因：
+无论设置error_reporting还是ini_display都不显示错误，经过排查，确定原因：
+1. 首先 在Think\Think::start(); 中 设置了 register_shutdown_function('Think\Think::fatalError')，这样会导致异常结束后，错误的输出行为改为自定义的函数处理。
+2. fatalError()中  调用halt() 输出错误依赖于 C('TMPL_EXCEPTION_FILE',null,THINK_PATH.'Tpl/think_exception.tpl')来确定模板位置。但是，此时C('TMPL_EXCEPTION_FILE',null,THINK_PATH.'Tpl/think_exception.tpl')返回值为false，因此没有办法加载错误模板。
+3. 追溯C('TMPL_EXCEPTION_FILE')为何为false，发现在 App::init()中，做了 C('TMPL_EXCEPTION_FILE',realpath(C('TMPL_EXCEPTION_FILE'))) 的操作， 因为在自定义的config中 设置了  
+    'TMPL_EXCEPTION_FILE'=>'/Home/Public/404page',
+    因为这个文件不存在，所以realpath返回了false,导致没有设置成功TMPL_EXCEPTION_FILE。
+4. tp坑爹的bug.
 
 
 

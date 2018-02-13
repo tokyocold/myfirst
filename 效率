@@ -1,0 +1,8 @@
+#XDEBUG 多个回话调试
+在项目中存在api再次调用的情况,如何方便的调试?
+核心就是:
+1.  在请求中添加XDEBUG_SESSION_START参数
+2. phpstorm设置中,Max.simultaneous connections 设置大点.(默认为:1);
+这也是debug时,其他请求被阻塞的原因
+
+  

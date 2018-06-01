@@ -249,7 +249,9 @@ ng-if会有一个自己独立的scope，可以使用$parent.var；
     $(obj).fnName();
 
 
-
+## 获取多个input的值
+- $("input") .map(function(){return $(this).val();}).get();
+- $("input").serialize();
 
 
 

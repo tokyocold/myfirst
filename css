@@ -22,4 +22,5 @@
 <div margin-left:60px></div>
 
 
-
+# 内部元素存在 float时 ,如何让外部元素高度正确
+ 添加 overflow:auto;

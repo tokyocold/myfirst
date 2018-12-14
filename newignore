@@ -133,6 +133,52 @@ WHERE   b.user_id IS NULL
 mysql cli连不上  程序正常的原因：
 mysql 编译的时候指定的端口不是3306，要手动指定下。。。。。
 
+mysql效率优化:
+百级级数据(税收表) 效率优化心得:
+在百万级数据表下做join,优化之前查询要两分钟以上,优化后可以在2-5秒之内打开.
+心得:
+复杂的查询下,单列索引已经完全不起作用了.每列加也没啥卵用.这个时候,就需要联合索引了.建立联合索引要遵循最左原则.通俗点说:
+查询SQL为:
+select * FROM plat_tax_registration a WHERE a.zone_company_id = '186070' and company_id in (***) AND a.status = 1 GROUP BY a.company_id ORDER BY a.`year_month` desc
+那么,这个时候建立的索引顺序要为: ADD INDEX( `zone_company_id`, `company_id`, `status`,`year_month`)
+可以简单说一下索引大概的原理:
+假设数据表为:
+-------------------------------------------------------
+zone_company_id|company_id|status|year_month|
+1                         | 123           | 1       | 20150101 |
+2                         | 12312       | 0       | 20150101 |
+1                         | 123           | 1       | 20150101 |
+2                         | 12             | 0       | 20150101 |
+那么,建立的索引会依据索引的顺序建立一个btree,对索引内的字段排序.这里,第一列是绝对有序的:
+
+zone_company_id|company_id|status|year_month|
+1                         | 123           | 1       | 20150101 |
+1                         | 123           | 1       | 20150101 |
+2                         | 12             | 0       | 20150101 |
+2                         | 12312       | 0       | 20150101 |
+
+这样,在查询过程中,查询优化器会根据条件开始逐个二分,(解释了为什么 where 后面的条件位置移动也可以使用索引的原理,因为有查询优化器)
+1 对zone_company_id二分迅速确定范围
+2 对结果进一步二分确定company_id的范围
+******
+以此类推
+
+如果这里的索引顺序为 ADD INDEX( `year_month`,`zone_company_id`, `company_id`, `status`),查询条件中并没有year_month,只在order by中存在,那么查询时,无法根据条件做二分,实际上还是做了全表扫描
+
+
+SQL查询状态一直是sending_data:
+索引已经使用.为什么是sending_data状态?因为没有加phpmyadmin没有加limit语句= =  60多万条数据返回必然要很久,即使最终显示在页面上只有20条
+
+year_month in  (1483200000,1485878400) 和 year_month > 1483200000 and year_month < 1485878400比较:
+in的速度发现比year_month的速度慢非常多,两个语句本质上查询的结果应该是一样的,而且in 的索引方式感觉上要好于year_month,排查后,发现了问题所在:year_month这个字段,本身的值(区分度)并不高,所以如果in(***)的值超过一定的范围,就不会使用到索引了,即使使用force_index 也没有办法获得很好的查询效果.而大于小于这种range方式,则会很好的利用索引.虽然索引的方式为range.
+当减少year_Month in ()的值,速度就和大于小于的速度相差无几了
+结论: 大于 小于的方式在 索引区分度并不高的情况下,并不会有明显的速度差异,MYsql内部的查询优化器可以做的很好.
+
+
+
+
+
+
 
 
 git
@@ -142,7 +188,7 @@ git
 - git revert reset区别
 revert 生成一条新的提交来撤销某次提交，之前的commit都会保留
 reset 回到某次提交，提交之前的保留，之后的回到暂存区  
-倾向于使用reset.
+
 
 - git branch -d XXX 删除分之
   git branch -D XXX 强制删除
@@ -156,6 +202,41 @@ git log --follow -p filename
 然后使用/keyoword查找
 
 
+git流程&思想:
+git应该是一个任务在一个分支,便于管理.
+1. 在任务的分支下,只做和当前任务相关的功能或者Bug修改.提交时,首先合并所有的提交,这样便于之后撤销:
+git rebase -i HEAD~(n)  //n为合并的commit数目
+或者
+git rebase -i commitID   //合并commitID之后的所有commit
+编辑时,最早的commit默认还是pick.
+其他的改为s.
+这样则吧所有之前的提交合并为一个.
+
+2. 回到公共分支,pull之后,保证公共分支代码最新,切回工作分支,开始合并:
+git rebase 公共分支.
+这里不使用merge,而是用rebase.rebase可以保证当前工作分支的提交放在主分支提交的后面.
+公共分支:
+comit a
+comit v
+comit d
+工作分支
+comit 1
+rebase后,工作分支log:
+comit 1  //放在了最新
+comit a
+comit v
+comit d
+
+3. 回到公共分支,执行合并:
+git merge 工作分支.
+这里要注意注意!绝对绝对不要在公共分支上使用rebase
+
+
+4. 补充流程,为了保证所有的任务,包括该任务下所有的bug都在一个commit内,便于撤销,可以在下次合并工作分支到公共分支时,revert上次的提交在执行merge.这样,每个任务连同bug始终只有一个commit
+
+
+git cherry-pick commitID
+可以把指定的commit提交合并到当前的分支上.
 
 
 
@@ -328,8 +409,11 @@ make && make install
 添加生成的so即可。
 
 
-
-
+- ssh免密登录失败问题:
+查看服务端/var/log/secure,有如下提示:
+Authentication refused: bad ownership or modes for directory /root
+发现所有用户的HOME目录应该是700权限，否则会引起很多问题，这个问题同样是由于这个原因
+最终，执行chmod 700 root后解决
 
 
 
@@ -370,5 +454,15 @@ https://routerguide.net/nat-acceleration-on-or-off/
 因此 关闭CTF后，即可正常实现端口映射
 
 目前使用了 共云 的动态域名服务。
+
+
+#elasticsearch研究
+elasticsearch服务端和客户端(es-php)的版本要一致.
+关于索引文档:
+index()是重建,即使ID一致,也会删掉原有的文档索引新的文档
+update()是更新,不会删除原有ID对应的文档
+update([doc=>[key=>$data]]): 并不会删除key对应的数据重新索引,而是追加合并$data内容到key.
+
+
 
 

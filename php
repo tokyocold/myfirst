@@ -897,8 +897,40 @@ $model->table($subQuery.' a')->where()->order()->select()
 4. tp坑爹的bug.
 
 
+##关于Log
+Tp统一的log记录在 Thin类中,start()方法的register_shutdown_function中:Think\Think::fatalError
+在程序因意外结束或者运行完毕或者exit后,会自动调用fatalError
+其中 的log::save()就是保存日志信息.
+
+日志没有保存SQL的一个原因是开启了页面调试.
+执行SQL时,会调用trace()方法,SHOW_PAGE_TRACE如果为开启是不会调用   Log::record($info,$level,$record)
+Log::record() 将日志存在内存中,在最后执行完毕后统一存入文件
+Log::write()实时存入文件.
+
+记得在C('LOG_LEVEL')中增加记录内容
 
 
+##php导出excel乱码 以及  末尾精度0的问题
+可以使用  htmlExcel格式 直接输出
+<html xmlns:o="urn:schemas-microsoft-com:office:office"  
+xmlns:x="urn:schemas-microsoft-com:office:excel"  
+xmlns="http://www.w3.org/TR/REC-html40">  
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">  
+<html>  
+    <head>  
+        <meta http-equiv="Content-type" content="text/html;charset=UTF-8" />  
+        <style id="Classeur1_16681_Styles"></style>  
+    </head>  
+    <body>  
+        <div id="Classeur1_16681" align=center x:publishsource="Excel">  
+            此处内容为Table
+        </div>  
+    </body>  
+</html>  
+
+精度问题:
+通过在td上添加style即可.
+<td style="vnd.ms-excel.numberformat:@">{$jkz['name']}</td>
 
 
 

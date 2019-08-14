@@ -253,7 +253,8 @@ ng-if会有一个自己独立的scope，可以使用$parent.var；
 - $("input") .map(function(){return $(this).val();}).get();
 - $("input").serialize();
 
-
+## select显示的元素:
+input:checked:visible
 
 
 

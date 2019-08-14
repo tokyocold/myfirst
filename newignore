@@ -175,6 +175,15 @@ in的速度发现比year_month的速度慢非常多,两个语句本质上查询�
 结论: 大于 小于的方式在 索引区分度并不高的情况下,并不会有明显的速度差异,MYsql内部的查询优化器可以做的很好.
 
 
+读锁
+排它锁  
+begin;
+select * from table for update;
+commit;
+在commit之前  其他操作没有办法获取到table
+select * from table for update 会阻塞;
+
+
 
 
 
@@ -462,6 +471,24 @@ elasticsearch服务端和客户端(es-php)的版本要一致.
 index()是重建,即使ID一致,也会删掉原有的文档索引新的文档
 update()是更新,不会删除原有ID对应的文档
 update([doc=>[key=>$data]]): 并不会删除key对应的数据重新索引,而是追加合并$data内容到key.
+
+
+#正则表达式
+断言:
+?= 正向肯定   ?!正向否定
+?<= 反向肯定   ?<! 反向否定
+?=pattern  匹配后面是pattern的字符串   
+^(.*(?=招标|中标))   
+将会匹配  变压器资格招标预审公告  的 变压器资格
+不会匹配  变压器资格预审公告
+
+?!pattern  匹配后面不是pattern的字符串
+^(.(?!招标|中标))*$
+将会匹配 变压器资格预审公告
+
+
+
+
 
 
 
